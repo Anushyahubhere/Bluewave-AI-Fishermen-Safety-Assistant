@@ -1,52 +1,35 @@
 import streamlit as st
-import pyttsx3
 import requests
+import json
 import firebase_admin
 from firebase_admin import credentials, firestore
 import time
-import json
 
-# Firebase Setup
+# Load Firebase credentials (make sure the JSON file is in the same folder)
 cred = credentials.Certificate("bluewave-ai-34bdc-firebase-adminsdk-fbsvc-1a6c809736.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-# Google Cloud API Key
+# Google Maps API key
 GOOGLE_MAPS_API_KEY = "AIzaSyDTGMq-2U1N6nh98TCr_PFFXrW3mEkWmOI"
 
-# Voice Engine
-engine = pyttsx3.init()
-engine.setProperty('rate', 150)
+# Simulated Weather Prediction
+def get_weather(lat, lon):
+    return "Sunny with waves, 20% chance of storm"
 
-# Language Toggle
-lang = st.sidebar.selectbox("Choose Language / மொழியைத் தேர்ந்தெடுக்கவும்", ["English", "தமிழ்"])
-
-# Function to speak text
-def speak(text):
-    engine.say(text)
-    engine.runAndWait()
-
-# Dummy Fish Zone Prediction
+# Simulated Fish Zone Prediction
 def predict_fish_zone(lat, lon):
-    if 9 < lat < 11 and 75 < lon < 77:
+    if 8 < lat < 20 and 70 < lon < 85:
         return "High Fish Density Zone"
-    return "Low Fish Probability"
+    return "Low Fish Activity"
 
-# Dummy Border Alert
+# Simulated Border Alert
 def border_alert(lat, lon):
     if 10 < lat < 20 and 75 < lon < 80:
         return "Inside Safe Zone"
     return "Border Alert! Return immediately!"
 
-# Dummy Weather from Google Cloud API (simulate)
-def get_weather():
-    return "Cloudy with slight rain"
-
-# Dummy Route Optimization (simulate)
-def get_optimized_route():
-    return "Route: Port > Mid Sea > Fish Zone > Return"
-
-# Send SOS to Firebase
+# SOS Logger
 def send_sos(location):
     db.collection("sos_alerts").add({
         "timestamp": time.ctime(),
@@ -54,58 +37,58 @@ def send_sos(location):
     })
     st.success("SOS sent and logged!")
 
-# UI Styling
+# Background image from Unsplash
 st.markdown("""
     <style>
-    .main {
-        background-color: #e3f2fd;
-        padding: 20px;
-        border-radius: 15px;
+    .stApp {
+        background-image: url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e");
+        background-size: cover;
+        background-attachment: fixed;
+        color: black;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Title
-if lang == "English":
-    st.title("BlueWave AI - Fishermen Safety Assistant")
-else:
-    st.title("புளூவேவ் ஏஐ - மீனவர்களின் பாதுகாப்பு உதவியாளர்")
+# Language switch
+lang = st.sidebar.selectbox("Choose Language / மொழியைத் தேர்ந்தெடுக்கவும்", ["English", "தமிழ்"])
 
-# Inputs
-st.subheader("Location Input")
+# App title
+st.title("BlueWave AI - Fishermen Safety Assistant" if lang == "English" else "புளூவேவ் ஏஐ - மீனவர்களின் பாதுகாப்பு உதவியாளர்")
+
+# Input
+st.subheader("Enter Location Coordinates")
 lat = st.number_input("Latitude", value=10.5)
 lon = st.number_input("Longitude", value=76.2)
-view_mode = st.radio("Map View Mode", ["roadmap", "satellite"])
 
-# Predictions
-weather = get_weather()
+# Data processing
+weather = get_weather(lat, lon)
 border = border_alert(lat, lon)
 fish_zone = predict_fish_zone(lat, lon)
-route = get_optimized_route()
 
-# Speak Alert
-if st.button("Voice Safety Alert"):
-    if lang == "English":
-        speak(f"Weather: {weather}. Border: {border}. Fish: {fish_zone}")
-    else:
-        speak(f"மழை நிலை: {weather}. எல்லை: {border}. மீன் நிலை: {fish_zone}")
-
-# Map Display
-st.subheader("Live Map")
-map_url = f"https://www.google.com/maps/embed/v1/view?key={GOOGLE_MAPS_API_KEY}&center={lat},{lon}&zoom=10&maptype={view_mode}"
+# Live Map
+st.subheader("Live Map View")
+map_mode = st.selectbox("Select Map Type", ["roadmap", "satellite"])
+map_url = f"https://www.google.com/maps/embed/v1/view?key={GOOGLE_MAPS_API_KEY}&center={lat},{lon}&zoom=10&maptype={map_mode}"
 st.components.v1.iframe(map_url, height=400)
 
-# Results Display
-st.subheader("AI Safety Predictions")
-st.info(f"Weather: {weather}")
-st.warning(f"Border Alert: {border}")
+# Predictions
+st.subheader("AI Safety Prediction")
+st.info(f"Weather Update: {weather}")
+st.warning(f"Border Status: {border}")
 st.success(f"Fish Zone: {fish_zone}")
-st.caption(f"Optimized Route: {route}")
 
-# SOS Button
+# Route directions
+st.subheader("Route Optimization")
+route_url = f"https://www.google.com/maps/dir/?api=1&destination={lat},{lon}"
+st.markdown(f"[Get Route Directions]({route_url})", unsafe_allow_html=True)
+
+# SOS button
 if st.button("Send Emergency SOS"):
     send_sos({"lat": lat, "lon": lon})
 
 # Footer
 st.markdown("---")
-st.caption("Powered by Streamlit | Firebase | Google Cloud | Gemini")
+st.caption("Powered by Streamlit | Firebase | Google Cloud | GDG Hackathon")
+
+
+
