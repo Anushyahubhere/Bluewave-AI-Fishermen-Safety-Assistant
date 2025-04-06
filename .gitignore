@@ -1,21 +1,43 @@
-# Byte-compiled / optimized / DLL files
+# Python cache and virtual environments
 __pycache__/
 *.py[cod]
-*.so
-
-# Virtual environments
+*.egg-info/
+.env/
+.venv/
 venv/
-.env
-.env.*
+ENV/
+env/
 
-# Firebase credentials
-*.json
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
 
-# Streamlit artifacts
-.streamlit/
-
-# OS & Editor junk
+# macOS and Linux
 .DS_Store
+
+# Windows
+Thumbs.db
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Logs
+*.log
+
+# VS Code settings
+.vscode/
+
+# System files
 *.swp
 *.swo
+
+# Ignore any credentials or keys accidentally placed
+*.json
+*.pem
+*.key
+
+# Compiled files
+*.so
+*.dll
+*.out
+*.o
 
