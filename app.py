@@ -1,5 +1,5 @@
 # BlueWave AI - Fishermen Safety Assistant
-mport streamlit as st
+import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app
 import firebase_admin
 from datetime import datetime
