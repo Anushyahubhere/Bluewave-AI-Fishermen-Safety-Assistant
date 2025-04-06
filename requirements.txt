@@ -1,5 +1,6 @@
 streamlit
 firebase-admin
+google-cloud-firestore
 python-dotenv
+streamlit-lottie
 requests
-geocoder
