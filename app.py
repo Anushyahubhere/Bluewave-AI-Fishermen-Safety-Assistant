@@ -3,18 +3,19 @@
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
-import json
 
 # Set page config
 st.set_page_config(page_title="BlueWave AI - Fishermen Safety Assistant", layout="wide")
 
-# Initialize Firebase
+# Initialize Firebase only once
 if not firebase_admin._apps:
-    cred = credentials.Certificate(json.loads(json.dumps(st.secrets["firebase"])))
+    cred = credentials.Certificate(st.secrets["firebase"])
     firebase_admin.initialize_app(cred)
 
-# Connect to Firestore
+# Firestore DB
 db = firestore.client()
+
+
 
 # Session state 
 
