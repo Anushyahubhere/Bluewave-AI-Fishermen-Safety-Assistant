@@ -1,148 +1,138 @@
+# BlueWave AI - Fishermen Safety Assistant (Full Features)
+
 import streamlit as st
-import os
-import time
-import json
-from datetime import datetime
-from dotenv import load_dotenv
+from firebase_admin import credentials, firestore, initialize_app
 import firebase_admin
-from firebase_admin import credentials, firestore
-from streamlit.components.v1 import iframe
+from datetime import datetime
+import uuid
+import json
+import requests
+from streamlit_lottie import st_lottie
 
-# Load environment variables
-load_dotenv()
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
-FIREBASE_CRED_PATH = os.getenv("FIREBASE_CRED_PATH")
+# Set Streamlit config
+st.set_page_config(page_title="BlueWave AI", layout="wide")
+st.title("🌊 BlueWave AI - Fishermen Safety Assistant")
 
-# Firebase Initialization (optimized for single init)
+# Load Firebase credentials
 if not firebase_admin._apps:
-    cred = credentials.Certificate(FIREBASE_CRED_PATH)
-    firebase_admin.initialize_app(cred)
+    cred = credentials.Certificate(dict(st.secrets["firebase"]))
+    initialize_app(cred)
 
 db = firestore.client()
 
-# Page Config
-st.set_page_config(page_title="BlueWave AI", layout="wide")
+# Load Lottie animation (optional)
+def load_lottie_url(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
 
-# Session State
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
+# --- Sidebar ---
+menu = st.sidebar.radio("📱 Navigation", ["Login", "Real-time Location", "Send SOS", "Fish Zones", "AI Prediction", "Alerts", "About"])
+st.sidebar.markdown("---")
+st.sidebar.markdown("Made with ❤️ for Fishermen")
 
-# --- Login UI ---
-def login():
-    with st.sidebar:
-        st.subheader("🔒 Login")
-        user = st.text_input("Username")
-        pwd = st.text_input("Password", type="password")
-        if st.button("Login"):
-            if user == "fisherman" and pwd == "bluewave123":
-                st.session_state["authenticated"] = True
-                st.success("✅ Login Successful")
-            else:
-                st.error("❌ Invalid Credentials")
+# --- Session State ---
+if "user" not in st.session_state:
+    st.session_state.user = None
 
-# Run login logic
-if not st.session_state["authenticated"]:
-    login()
-    st.stop()
+# --- Login ---
+if menu == "Login":
+    st.subheader("🔐 Login")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        user_ref = db.collection("users").document(username).get()
+        if user_ref.exists and user_ref.to_dict().get("password") == password:
+            st.success("Logged in successfully!")
+            st.session_state.user = username
+        else:
+            st.error("Invalid username or password")
 
-# --- Sidebar Controls ---
-st.sidebar.title("🧭 Navigation")
-lang = st.sidebar.selectbox("Language / மொழி", ["English", "தமிழ்"])
-view_mode = st.sidebar.radio("Map View", ["Roadmap", "Satellite"])
+# --- Real-time Location Map ---
+elif menu == "Real-time Location":
+    st.subheader("📍 Real-time Fisherman Location")
+    if st.session_state.user:
+        lat = st.number_input("Latitude", value=8.5)
+        lon = st.number_input("Longitude", value=78.1)
+        if st.button("Update Location"):
+            db.collection("locations").document(st.session_state.user).set({
+                "username": st.session_state.user,
+                "latitude": lat,
+                "longitude": lon,
+                "timestamp": datetime.utcnow()
+            })
+            st.success("Location updated")
+        map_url = f"https://www.google.com/maps/embed/v1/view?key={st.secrets['GOOGLE_MAPS_API_KEY']}&center={lat},{lon}&zoom=10&maptype=satellite"
+        st.components.v1.iframe(map_url, height=500, width=800)
+    else:
+        st.warning("Please log in to access location features")
 
-# --- GPS Input ---
-with st.form("location_form"):
-    st.subheader("📍 Real-time Location Input")
-    col1, col2 = st.columns(2)
-    lat = col1.number_input("Latitude", value=10.5, format="%.6f")
-    lon = col2.number_input("Longitude", value=76.2, format="%.6f")
-    submitted = st.form_submit_button("Update Location")
+# --- SOS Feature ---
+elif menu == "Send SOS":
+    st.subheader("🚨 Send Emergency SOS")
+    if st.session_state.user:
+        emergency_msg = st.text_area("Describe the emergency")
+        lat = st.number_input("Latitude", value=8.5, key="sos_lat")
+        lon = st.number_input("Longitude", value=78.1, key="sos_lon")
+        if st.button("Send SOS"):
+            db.collection("sos_alerts").add({
+                "username": st.session_state.user,
+                "message": emergency_msg,
+                "latitude": lat,
+                "longitude": lon,
+                "timestamp": datetime.utcnow()
+            })
+            st.success("SOS Alert Sent!")
+    else:
+        st.warning("Please log in to send an SOS")
 
-# Show location map
-if submitted or ("last_lat" not in st.session_state):
-    st.session_state["last_lat"] = lat
-    st.session_state["last_lon"] = lon
+# --- Fish Detection Zones ---
+elif menu == "Fish Zones":
+    st.subheader("🐟 Fish Detection Zones")
+    st.markdown("**Predicted Hotspots for Fish**")
+    # Overlay from static map or external data (placeholder)
+    fish_map_url = f"https://www.google.com/maps/embed/v1/search?key={st.secrets['GOOGLE_MAPS_API_KEY']}&q=fish+zones+in+Tamil+Nadu"
+    st.components.v1.iframe(fish_map_url, height=500, width=800)
 
-cur_lat = st.session_state["last_lat"]
-cur_lon = st.session_state["last_lon"]
+# --- AI Prediction (Placeholder logic) ---
+elif menu == "AI Prediction":
+    st.subheader("🤖 AI Fish Catch Prediction")
+    st.markdown("Upload environmental data for prediction")
+    uploaded_file = st.file_uploader("Upload JSON with water temp, salinity, etc.")
+    if uploaded_file:
+        data = json.load(uploaded_file)
+        score = 0.7  # Dummy model
+        st.success(f"✅ Predicted Fish Availability Score: {score * 100:.1f}%")
 
-map_type = "roadmap" if view_mode == "Roadmap" else "satellite"
-map_url = f"https://www.google.com/maps/embed/v1/view?key={GOOGLE_MAPS_API_KEY}&center={cur_lat},{cur_lon}&zoom=10&maptype={map_type}"
-iframe(map_url, height=400)
+# --- Location-based Alerts ---
+elif menu == "Alerts":
+    st.subheader("📢 Nearby Alerts")
+    if st.session_state.user:
+        user_loc = db.collection("locations").document(st.session_state.user).get()
+        if user_loc.exists:
+            u_data = user_loc.to_dict()
+            sos_ref = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10)
+            for doc in sos_ref.stream():
+                data = doc.to_dict()
+                st.info(f"🚨 {data['username']} at ({data['latitude']}, {data['longitude']}): {data['message']}")
+        else:
+            st.warning("No location info found")
+    else:
+        st.warning("Please login to view alerts")
 
-# --- AI Predictions (mocked logic) ---
-def get_weather():
-    return "🌫️ Cloudy with chances of storm"
-
-def border_alert(lat, lon):
-    if 10 <= lat <= 20 and 75 <= lon <= 80:
-        return "✅ Inside Safe Zone"
-    return "⚠️ Border Alert! Dangerous Area!"
-
-def predict_fish_zone(lat, lon):
-    if 10 <= lat <= 13 and 76 <= lon <= 78:
-        return "🎣 Good fishing zone detected"
-    return "🚫 No active fishing zone nearby"
-
-# --- AI Safety Display ---
-st.subheader("🧠 AI Safety Predictions")
-st.info(f"Weather: {get_weather()}")
-st.warning(f"Border Status: {border_alert(cur_lat, cur_lon)}")
-st.success(f"Fish Zone: {predict_fish_zone(cur_lat, cur_lon)}")
-
-# --- SOS Section ---
-st.markdown("---")
-st.subheader("🚨 Emergency SOS")
-if st.button("Send SOS"):
-    db.collection("sos_alerts").add({
-        "timestamp": datetime.now().isoformat(),
-        "location": {"lat": cur_lat, "lon": cur_lon},
-        "status": "Emergency"
-    })
-    st.success("📡 SOS Alert Logged!")
-
-# --- Logbook ---
-@st.cache_data(ttl=30)
-def get_recent_sos():
-    return list(db.collection("sos_alerts")
-                .order_by("timestamp", direction=firestore.Query.DESCENDING)
-                .limit(10).stream())
-
-st.subheader("📘 Safety Logbook")
-for log in get_recent_sos():
-    entry = log.to_dict()
-    st.write(f"🕒 {entry['timestamp']} | 📍 {entry['location']} | 🚨 {entry['status']}")
-
-# --- Community Tips ---
-@st.cache_data(ttl=30)
-def get_community_tips():
-    return list(db.collection("safety_tips").stream())
-
-st.markdown("---")
-st.subheader("💡 Community Safety Tips")
-
-with st.expander("➕ Submit Tip"):
-    tip = st.text_area("Write your tip (English or Tamil):")
-    if st.button("Submit Tip"):
-        db.collection("safety_tips").add({
-            "tip": tip,
-            "time": time.ctime()
-        })
-        st.success("📝 Tip Submitted!")
-
-for t in get_community_tips():
-    st.markdown(f"🔹 {t.to_dict()['tip']}")
-
-# --- Gemini Chatbot Placeholder ---
-st.markdown("---")
-st.subheader("🤖 Gemini AI Assistant")
-user_input = st.text_input("Ask something:")
-if st.button("Ask Gemini"):
-    st.info("Gemini: This is a placeholder. Add Vertex AI integration for real chatbot.")
-
-# --- Footer ---
-st.markdown("---")
-st.caption("© 2025 BlueWave AI | Powered by Streamlit, Firebase, Google Maps")
+# --- About ---
+elif menu == "About":
+    st.subheader("🌊 About BlueWave AI")
+    st_lottie(load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_zrqthn6o.json"), height=200)
+    st.markdown("""
+    BlueWave AI is an assistant platform to enhance safety and success of fishermen using:
+    - Real-time tracking
+    - SOS emergency response
+    - AI-based fish detection
+    - Multilingual support (coming soon)
+    - Offline/mobile compatibility (coming soon)
+    """)
 
 
 
