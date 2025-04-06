@@ -28,7 +28,7 @@ BlueWave AI is an intelligent assistant designed to enhance the safety of fisher
 ```bash
 git clone https://github.com/your-username/bluewave-ai.git
 cd bluewave-ai
- Install Dependenci
+ Install Dependencies:
 pip install -r requirements.txt
 4 Run the App
 streamlit run app.py
