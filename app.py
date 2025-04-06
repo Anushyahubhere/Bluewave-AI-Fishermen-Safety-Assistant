@@ -115,7 +115,8 @@ elif menu == "Alerts":
             sos_ref = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10)
             for doc in sos_ref.stream():
                 data = doc.to_dict()
-                st.info(f"🚨 {data['username']} at ({data['latitude']}, {data['longitude']}): {data['message']}")
+                st.info(f"🚨 {data.get('username', 'Unknown')} at ({data.get('latitude', 'N/A')}, {data.get('longitude', 'N/A')}): {data.get('message', 'No message')}")
+
         else:
             st.warning("No location info found")
     else:
