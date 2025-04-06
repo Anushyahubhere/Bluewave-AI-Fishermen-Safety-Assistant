@@ -2,127 +2,118 @@
     # BlueWave AI - Fishermen Safety Assistant (Full Features)
 import streamlit as st
 import firebase_admin
-from firebase_admin import credentials, firestore, auth
-from google.cloud.firestore_v1.base_document import DocumentSnapshot
+from firebase_admin import credentials, firestore
+from datetime import datetime
+import uuid
 
-# Initialize Firebase
-if "firebase_app" not in st.session_state:
+# -------------------- CONFIG --------------------
+st.set_page_config(page_title="BlueWave AI", layout="centered")
+
+# -------------------- INIT FIREBASE --------------------
+if not firebase_admin._apps:
     cred = credentials.Certificate(st.secrets["firebase"])
     firebase_admin.initialize_app(cred)
-    st.session_state["firebase_app"] = True
-
 db = firestore.client()
 
-# Login Form
-if "user" not in st.session_state:
-    with st.form("login_form"):
-        st.subheader("🔐 Login to BlueWave AI")
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        submit = st.form_submit_button("Login")
+# -------------------- LANG --------------------
+lang = st.sidebar.radio("🌐 Language / மொழி", ["English", "தமிழ்"])
+T = lambda e, t: e if lang == "English" else t
 
-        if submit:
+# -------------------- LOGIN --------------------
+st.title("🌊 BlueWave AI - Fishermen Safety Assistant")
+st.subheader(T("Login", "உள் நுழை"))
+
+username = st.text_input(T("Username", "பயனர் பெயர்"))
+password = st.text_input(T("Password", "கடவுச்சொல்"), type="password")
+login_btn = st.button(T("Login", "உள்நுழைய"))
+
+user_doc = None
+if login_btn:
+    users_ref = db.collection("users")
+    query = users_ref.where("username", "==", username).where("password", "==", password).stream()
+    user_doc = next(query, None)
+    if user_doc:
+        st.success(T("Login successful ✅", "உள் நுழைவு வெற்றிகரமாக முடிந்தது ✅"))
+        st.session_state["logged_in"] = True
+        st.session_state["user"] = user_doc.to_dict()
+    else:
+        st.error(T("Invalid credentials ❌", "தவறான பயனர் விவரங்கள் ❌"))
+
+# -------------------- MAIN UI --------------------
+if st.session_state.get("logged_in"):
+
+    st.markdown("## 🧭 Features")
+    feature = st.selectbox(
+        T("Choose a feature", "ஒரு அம்சத்தைத் தேர்ந்தெடுக்கவும்"),
+        [
+            T("Send SOS Alert", "அவசர எச்சரிக்கை அனுப்பு"),
+            T("View Live Map", "தற்போதைய வரைபடம்"),
+            T("View Fish Zones", "மீன் பகுதிகளைப் பார்க்க"),
+            T("Safe Route Planning", "பாதுகாப்பான பாதை திட்டமிடல்"),
+            T("Catch Logbook", "மீன் பிடிப்பு பதிவேடு"),
+            T("Leaderboard", "முன்னணி பட்டியல்"),
+            T("Settings", "அமைப்புகள்")
+        ]
+    )
+
+    # 1. SOS Alert
+    if feature.startswith("Send SOS") or feature.startswith("அவசர"):
+        st.warning(T("⚠️ Send emergency alert with current GPS.", "⚠️ தற்போதைய இடத்துடன் அவசர எச்சரிக்கை அனுப்பவும்"))
+        lat = st.number_input("Latitude", format="%.6f")
+        lon = st.number_input("Longitude", format="%.6f")
+        sos_btn = st.button("📡 Send SOS")
+        if sos_btn:
+            db.collection("sos").add({
+                "username": username,
+                "location": firestore.GeoPoint(lat, lon),
+                "timestamp": datetime.utcnow(),
+                "id": str(uuid.uuid4())
+            })
+            st.success(T("🚨 SOS Sent!", "🚨 அவசர எச்சரிக்கை அனுப்பப்பட்டது!"))
+
+    # 2. Live Map
+    elif feature.startswith("View Live Map") or feature.startswith("தற்போதைய"):
+        st.info("🌍 " + T("Live SOS locations map", "நேரடி SOS இடங்கள் வரைபடம்"))
+        sos_docs = db.collection("sos").stream()
+        for doc in sos_docs:
+            data = doc.to_dict()
             try:
-                user = auth.get_user_by_email(email)
-                st.session_state["user"] = email
-                st.success(f"Logged in as {email}")
-                st.rerun()
-            except Exception:
-                st.error("Login failed. Please check your credentials.")
-    st.stop()
+                lat, lon = data["location"].latitude, data["location"].longitude
+                st.write(f"📍 {data['username']} at ({lat}, {lon})")
+                st.map([{"lat": lat, "lon": lon}])
+            except Exception as e:
+                st.warning(f"Skipped a faulty location: {e}")
 
-st.sidebar.title("🌊 BlueWave AI Features")
-feature = st.sidebar.radio("Choose a feature", [
-    "Real-time GPS Tracking",
-    "SOS Emergency Alert",
-    "Fish Catch Prediction",
-    "Fishing Zones Map",
-    "Fish Catch Logging",
-    "Voice Alerts",
-    "Safe Route Planning",
-    "Community Fish Zones",
-    "Offline Mode",
-    "Multilingual Support",
-    "Push Notifications",
-    "Emergency Contacts",
-    "Leaderboard",
-    "Badges & Rewards",
-    "Recent SOS Alerts",
-    "Live Firebase Alerts",
-    "Heatmap Zones",
-    "Fish Species Recognition",
-    "Daily Tips"
-])
+    # 3. Fish Zones (mocked overlay)
+    elif feature.startswith("View Fish Zones") or feature.startswith("மீன்"):
+        st.success(T("🗺️ Fish Catch Zones Overlaid", "🗺️ மீன் பிடிப்பு பகுதிகள் காட்டப்பட்டுள்ளன"))
+        st.image("https://i.imgur.com/FishZones.png", caption="Fish Zone Overlay (Example)", use_column_width=True)
 
-st.title("BlueWave AI - Fishermen Safety Assistant")
-st.subheader(f"🧭 {feature}")
+    # 4. Route Planning
+    elif feature.startswith("Safe Route") or feature.startswith("பாதுகாப்பான"):
+        st.info("🧭 " + T("Plan your safe return path.", "பாதுகாப்பான திரும்பும் பாதையை திட்டமிடுங்கள்."))
+        st.text_input("Start Location")
+        st.text_input("Destination")
+        st.button("🚤 Plot Route")
 
-# Sample Logic for Recent SOS Alerts Feature
-if feature == "Recent SOS Alerts":
-    st.info("Showing recent SOS alerts from fishermen")
-    sos_ref = db.collection("sos_alerts")
-    try:
-        sos_docs = sos_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10).stream()
-        for a in sos_docs:
-            a = a.to_dict() if isinstance(a, DocumentSnapshot) else a
-            username = a.get("username", "Unknown")
-            location = a.get("location")
-            if location:
-                st.write(f"🚨 {username} at {location.latitude},{location.longitude}")
-            else:
-                st.write(f"🚨 {username} (Location not available)")
-    except Exception as e:
-        st.error("Failed to fetch SOS alerts.")
+    # 5. Logbook
+    elif feature.startswith("Catch Logbook") or feature.startswith("பிடிப்பு"):
+        st.text_input("Fish Type")
+        st.number_input("Weight (kg)", min_value=0.0)
+        st.date_input("Catch Date")
+        st.button("📝 Log Catch")
 
-# Placeholder for other features
-elif feature == "Real-time GPS Tracking":
-    st.map()  # placeholder
-    st.success("Real-time GPS map will appear here.")
+    # 6. Leaderboard
+    elif feature.startswith("Leaderboard") or feature.startswith("முன்னணி"):
+        st.balloons()
+        st.write("🏆 Leaderboard coming soon!")
 
-elif feature == "Fish Catch Prediction":
-    st.success("AI fish catch prediction will be integrated here.")
+    # 7. Settings
+    elif feature.startswith("Settings") or feature.startswith("அமைப்புகள்"):
+        st.toggle("Enable Notifications")
+        st.toggle("Dark Mode")
+        st.selectbox("Language", ["English", "தமிழ்"])
 
-elif feature == "Fishing Zones Map":
-    st.success("Fishing zones overlay on map coming soon.")
-
-elif feature == "Fish Catch Logging":
-    st.success("Form to log fish catches.")
-
-elif feature == "Voice Alerts":
-    st.success("Voice alerts system will be integrated here.")
-
-elif feature == "Safe Route Planning":
-    st.success("Safe navigation route feature placeholder.")
-
-elif feature == "Community Fish Zones":
-    st.success("Community-submitted fishing zones.")
-
-elif feature == "Offline Mode":
-    st.success("App will support offline data capture.")
-
-elif feature == "Multilingual Support":
-    st.success("App supports English and Tamil.")
-
-elif feature == "Push Notifications":
-    st.success("Push notifications coming soon.")
-
-elif feature == "Emergency Contacts":
-    st.success("Add and manage emergency contacts.")
-
-elif feature == "Leaderboard":
-    st.success("Fishing leaderboard by catch volume.")
-
-elif feature == "Badges & Rewards":
-    st.success("Gamification with badges and rewards.")
-
-elif feature == "Live Firebase Alerts":
-    st.success("Live alerts from Firebase will appear here.")
-
-elif feature == "Heatmap Zones":
-    st.success("Heatmap of fishing activity.")
-
-elif feature == "Fish Species Recognition":
-    st.success("Upload fish photo for species detection.")
-
-elif feature == "Daily Tips":
-    st.success("Fishing safety and tips for the day.")
+# -------------------- END --------------------
+st.markdown("---")
+st.caption("Built with ❤️ for Fishermen - BlueWave AI")
