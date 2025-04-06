@@ -2,129 +2,127 @@
     # BlueWave AI - Fishermen Safety Assistant (Full Features)
 import streamlit as st
 import firebase_admin
-from firebase_admin import credentials, firestore
-import datetime
-import pydeck as pdk
-import pandas as pd
-import requests
-from google.protobuf.json_format import MessageToDict
-from streamlit_lottie import st_lottie
-from gtts import gTTS
-import base64
-import os
-import random
-import time
+from firebase_admin import credentials, firestore, auth
+from google.cloud.firestore_v1.base_document import DocumentSnapshot
 
 # Initialize Firebase
-if not firebase_admin._apps:
-    cred = credentials.Certificate(dict(st.secrets["firebase"]))
+if "firebase_app" not in st.session_state:
+    cred = credentials.Certificate(st.secrets["firebase"])
     firebase_admin.initialize_app(cred)
+    st.session_state["firebase_app"] = True
+
 db = firestore.client()
 
-# Load Lottie animation
-def load_lottie_url(url):
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    return r.json()
+# Login Form
+if "user" not in st.session_state:
+    with st.form("login_form"):
+        st.subheader("🔐 Login to BlueWave AI")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        submit = st.form_submit_button("Login")
 
-# Voice alert generator
-def speak(text, lang='en'):
-    tts = gTTS(text, lang=lang)
-    tts.save("alert.mp3")
-    audio_file = open("alert.mp3", "rb")
-    audio_bytes = audio_file.read()
-    st.audio(audio_bytes, format='audio/mp3')
+        if submit:
+            try:
+                user = auth.get_user_by_email(email)
+                st.session_state["user"] = email
+                st.success(f"Logged in as {email}")
+                st.rerun()
+            except Exception:
+                st.error("Login failed. Please check your credentials.")
+    st.stop()
 
-# Layout setup
-st.set_page_config(page_title="BlueWave AI - Fishermen Safety Assistant", layout="wide")
+st.sidebar.title("🌊 BlueWave AI Features")
+feature = st.sidebar.radio("Choose a feature", [
+    "Real-time GPS Tracking",
+    "SOS Emergency Alert",
+    "Fish Catch Prediction",
+    "Fishing Zones Map",
+    "Fish Catch Logging",
+    "Voice Alerts",
+    "Safe Route Planning",
+    "Community Fish Zones",
+    "Offline Mode",
+    "Multilingual Support",
+    "Push Notifications",
+    "Emergency Contacts",
+    "Leaderboard",
+    "Badges & Rewards",
+    "Recent SOS Alerts",
+    "Live Firebase Alerts",
+    "Heatmap Zones",
+    "Fish Species Recognition",
+    "Daily Tips"
+])
+
 st.title("BlueWave AI - Fishermen Safety Assistant")
+st.subheader(f"🧭 {feature}")
 
-# Multilingual toggle
-lang = st.sidebar.selectbox("Language / மொழி", ["English", "தமிழ்"])
-translate = {"English": lambda x: x, "தமிழ்": lambda x: f"(தமிழில்) {x}"}  # Dummy switcher
+# Sample Logic for Recent SOS Alerts Feature
+if feature == "Recent SOS Alerts":
+    st.info("Showing recent SOS alerts from fishermen")
+    sos_ref = db.collection("sos_alerts")
+    try:
+        sos_docs = sos_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10).stream()
+        for a in sos_docs:
+            a = a.to_dict() if isinstance(a, DocumentSnapshot) else a
+            username = a.get("username", "Unknown")
+            location = a.get("location")
+            if location:
+                st.write(f"🚨 {username} at {location.latitude},{location.longitude}")
+            else:
+                st.write(f"🚨 {username} (Location not available)")
+    except Exception as e:
+        st.error("Failed to fetch SOS alerts.")
 
-# Real-time location tracking
-st.header(translate[lang]("1. Real-Time GPS Tracking"))
-latitude = st.number_input("Latitude", value=8.0883, format="%.6f")
-longitude = st.number_input("Longitude", value=77.5385, format="%.6f")
-st.map(pd.DataFrame([[latitude, longitude]], columns=['lat', 'lon']))
+# Placeholder for other features
+elif feature == "Real-time GPS Tracking":
+    st.map()  # placeholder
+    st.success("Real-time GPS map will appear here.")
 
-# SOS alert
-st.header(translate[lang]("2. SOS Emergency Alert"))
-if st.button("Send SOS"):
-    db.collection("sos_alerts").add({
-        "username": st.secrets["firebase"]["client_email"],
-        "location": firestore.GeoPoint(latitude, longitude),
-        "timestamp": firestore.SERVER_TIMESTAMP,
-    })
-    st.success("SOS Sent!")
+elif feature == "Fish Catch Prediction":
+    st.success("AI fish catch prediction will be integrated here.")
 
-# Fish prediction dummy
-st.header(translate[lang]("4. AI-Based Fish Catch Prediction"))
-pred = random.choice(["High Chances", "Moderate Chances", "Low Chances"])
-st.metric(label="Prediction", value=translate[lang](pred))
+elif feature == "Fishing Zones Map":
+    st.success("Fishing zones overlay on map coming soon.")
 
-# Fish logging
-st.header(translate[lang]("5. Log Fish Catch"))
-with st.form("catch_form"):
-    fish_type = st.text_input("Fish Type")
-    weight = st.number_input("Weight (kg)", min_value=0.0)
-    date = st.date_input("Date", value=datetime.date.today())
-    submitted = st.form_submit_button("Log Catch")
-    if submitted:
-        db.collection("catches").add({"type": fish_type, "weight": weight, "date": str(date), "loc": [latitude, longitude]})
-        st.success("Catch Logged")
+elif feature == "Fish Catch Logging":
+    st.success("Form to log fish catches.")
 
-# Voice alert
-st.header(translate[lang]("6. Voice Alerts"))
-if latitude > 8.5:
-    speak(translate[lang]("You are near a danger zone!"), lang='ta' if lang == "தமிழ்" else 'en')
+elif feature == "Voice Alerts":
+    st.success("Voice alerts system will be integrated here.")
 
-# Safe route planning placeholder
-st.header(translate[lang]("7. Safe Route Planner"))
-st.markdown("Safe route from your location is being processed... (dummy)")
+elif feature == "Safe Route Planning":
+    st.success("Safe navigation route feature placeholder.")
 
-# Community fish zones
-st.header(translate[lang]("8. Community Shared Fish Zones"))
-if st.button("Add My Current Location as Good Zone"):
-    db.collection("fish_zones").add({"lat": latitude, "lon": longitude})
-    st.success("Zone Shared")
+elif feature == "Community Fish Zones":
+    st.success("Community-submitted fishing zones.")
 
-# Multilingual
-st.header(translate[lang]("10. Multilingual UI"))
-st.success(translate[lang]("Current language applied"))
+elif feature == "Offline Mode":
+    st.success("App will support offline data capture.")
 
-# Emergency Contacts
-st.header(translate[lang]("13. Emergency Contacts"))
-st.markdown("**Coast Guard:** 1554\n**Emergency:** 112\n**Family Contact:** +91 9876543210")
+elif feature == "Multilingual Support":
+    st.success("App supports English and Tamil.")
 
-# Leaderboard (dummy)
-st.header(translate[lang]("14. Top Contributors"))
-st.table(pd.DataFrame({"User": ["Ravi", "Mani"], "Catches": [23, 17]}))
+elif feature == "Push Notifications":
+    st.success("Push notifications coming soon.")
 
-# Badges (dummy)
-st.header(translate[lang]("15. Your Badges"))
-st.success("Fishing Master | Safe Sailor")
+elif feature == "Emergency Contacts":
+    st.success("Add and manage emergency contacts.")
 
-# Recent alerts
-st.header(translate[lang]("16. Recent SOS Alerts"))
-alerts = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(5).stream()
-for alert in alerts:
-    a = alert.to_dict()
-    st.write(f"{a['username']} at {a['location'].latitude},{a['location'].longitude}")
+elif feature == "Leaderboard":
+    st.success("Fishing leaderboard by catch volume.")
 
-# Heatmap (dummy)
-st.header(translate[lang]("18. Fish Heatmap"))
-heat_df = pd.DataFrame({"lat": [latitude+0.01], "lon": [longitude+0.01], "weight": [5]})
-st.map(heat_df)
+elif feature == "Badges & Rewards":
+    st.success("Gamification with badges and rewards.")
 
-# Daily tips
-st.header(translate[lang]("20. Daily Fishing Tip"))
-tips = ["Fish near rocky areas today.", "Avoid strong tides.", "Cast net around 6 AM."]
-st.info(random.choice(tips))
+elif feature == "Live Firebase Alerts":
+    st.success("Live alerts from Firebase will appear here.")
 
+elif feature == "Heatmap Zones":
+    st.success("Heatmap of fishing activity.")
 
+elif feature == "Fish Species Recognition":
+    st.success("Upload fish photo for species detection.")
 
-
-
+elif feature == "Daily Tips":
+    st.success("Fishing safety and tips for the day.")
