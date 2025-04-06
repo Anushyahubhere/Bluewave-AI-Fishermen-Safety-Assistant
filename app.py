@@ -3,17 +3,22 @@
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
-from datetime import datetime
-import uuid
+import json
 
-# -------------------- CONFIG --------------------
-st.set_page_config(page_title="BlueWave AI", layout="centered")
+# Set page config
+st.set_page_config(page_title="BlueWave AI - Fishermen Safety Assistant", layout="wide")
 
-# -------------------- INIT FIREBASE --------------------
+# Initialize Firebase
 if not firebase_admin._apps:
-    cred = credentials.Certificate(st.secrets["firebase"])
+    cred = credentials.Certificate(json.loads(json.dumps(st.secrets["firebase"])))
     firebase_admin.initialize_app(cred)
+
+# Connect to Firestore
 db = firestore.client()
+
+# Session state 
+
+
 
 # -------------------- LANG --------------------
 lang = st.sidebar.radio("🌐 Language / மொழி", ["English", "தமிழ்"])
