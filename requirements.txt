@@ -1,3 +1,4 @@
-streamlit
-firebase-admin
-requests
+streamlit>=1.31.1
+python-dotenv>=1.0.1
+firebase-admin>=6.4.0
+google-cloud-firestore>=2.14.0
