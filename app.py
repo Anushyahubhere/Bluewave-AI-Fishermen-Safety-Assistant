@@ -90,17 +90,17 @@ body {background: linear-gradient(to bottom, #a0e9fd, #4aa0e6); color:#03396c;}
 
 # --- Sidebar Navigation with Icons ---
 menu_icons = {
-    translations["login"][lang]:"🔐",
+    translations["login"][lang]:"",
     translations["send_sos"][lang]:"🚨",
     translations["ai_prediction"][lang]:"🤖",
     translations["weather_advisory"][lang]:"🌤",
     translations["community_updates"][lang]:"💬",
-    "📍 Real-time Location":"📍",
+    "📍 Real-time Location":"",
     translations["safe_zone_prediction"][lang]:"🗺️",
     translations["voice_assistant"][lang]:"🎤",
     translations["fishing_trends"][lang]:"📈",
     translations["safe_routes"][lang]:"🛟",
-    translations["alerts"][lang]:"📢",
+    translations["alerts"][lang]:"",
     translations["about"][lang]:"ℹ️"
 }
 menu_labels = [f"{menu_icons[m]} {m}" for m in menu_icons.keys()]
@@ -258,6 +258,7 @@ elif menu_key == translations["about"][lang]:
     - Voice assistant commands
     - Fully Cloud-compatible & mobile-friendly
     """)
+
 
 
 
