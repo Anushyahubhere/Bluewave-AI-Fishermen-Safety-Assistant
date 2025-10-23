@@ -304,8 +304,8 @@ elif menu == translations["community_updates"][lang]:
         speak(updates_text)
 
 # --- ABOUT ---
-elif menu == translations["title"][lang]:
-    st.subheader(translations["title"][lang])
+elif menu == translations["About"][lang]:
+    st.subheader(translations["About"][lang])
     st.markdown("""
     BlueWave AI is an advanced assistant platform for fishermen:
     - Send & receive SOS alerts
@@ -317,3 +317,4 @@ elif menu == translations["title"][lang]:
     - Voice assistant commands
     - Fully Cloud-compatible & mobile-friendly
     """)
+
