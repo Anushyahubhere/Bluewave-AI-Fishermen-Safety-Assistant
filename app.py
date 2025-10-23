@@ -7,8 +7,8 @@ import uuid
 import json
 import requests
 from streamlit_lottie import st_lottie
-from streamlit.components.v1 import html
 import pandas as pd
+from streamlit_js_eval import streamlit_js_eval  # For real-time location
 
 # Streamlit setup
 st.set_page_config(page_title="BlueWave AI", layout="wide")
@@ -146,34 +146,29 @@ elif menu == "Community Updates":
         ).limit(10)
         for doc in updates.stream():
             u = doc.to_dict()
-            st.info(f"**{u['username']}**: {u['post']}  \n🕒 {u['timestamp']}")
+            st.info(f"**{u.get('username','Unknown')}**: {u.get('post','')}  \n🕒 {u.get('timestamp','')}")
     else:
         st.warning("Login to post or view updates.")
 
-# --- REAL-TIME LOCATION ---
+# --- REAL-TIME LOCATION (WORKING) ---
 elif menu == "Real-time Location":
     st.subheader("📍 Real-time Location Tracker")
     if st.session_state.user:
-        st.markdown("Press the button to fetch your current location from device:")
-        if st.button("Get My Location"):
-            location_js = """
-            <script>
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    document.querySelector('body').innerHTML = 
-                    `LAT:${position.coords.latitude},LON:${position.coords.longitude}`;
-                },
-                (err) => {
-                    document.querySelector('body').innerHTML = "Geolocation not allowed";
-                }
-            );
-            </script>
-            """
-            html(location_js, height=50)
+        coords = streamlit_js_eval(
+            js_expressions="""
+            new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => resolve([pos.coords.latitude, pos.coords.longitude]),
+                    (err) => resolve(null)
+                );
+            });
+            """,
+            key="get_location"
+        )
 
-            lat = st.text_input("Latitude (from device)")
-            lon = st.text_input("Longitude (from device)")
-
+        if coords:
+            lat, lon = coords
+            st.success(f"✅ Latitude: {lat}, Longitude: {lon}")
             if st.button("Update Location in System"):
                 db.collection("locations").document(st.session_state.user).set({
                     "username": st.session_state.user,
@@ -181,26 +176,42 @@ elif menu == "Real-time Location":
                     "longitude": lon,
                     "timestamp": datetime.utcnow()
                 })
-                st.success("✅ Location updated!")
+                st.success("📍 Location updated successfully!")
+        else:
+            st.info("Allow browser to access your location.")
     else:
         st.warning("Login to use location feature.")
 
 # --- FISHING TRENDS DASHBOARD ---
 elif menu == "Fishing Trends":
     st.subheader("📈 Fishing Trends Dashboard")
+    
     sos_data = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).stream()
     community_data = db.collection("community_updates").order_by("timestamp", direction=firestore.Query.DESCENDING).stream()
-
-    sos_list = [{"username": d.to_dict()["username"], "timestamp": d.to_dict()["timestamp"]} for d in sos_data]
-    community_list = [{"username": d.to_dict()["username"], "timestamp": d.to_dict()["timestamp"]} for d in community_data]
-
+    
+    sos_list = [
+        {"username": d.to_dict().get("username","Unknown"), "timestamp": d.to_dict().get("timestamp","")} 
+        for d in sos_data
+    ]
+    community_list = [
+        {"username": d.to_dict().get("username","Unknown"), "timestamp": d.to_dict().get("timestamp","")} 
+        for d in community_data
+    ]
+    
     df_sos = pd.DataFrame(sos_list)
     df_comm = pd.DataFrame(community_list)
-
+    
     st.markdown("### Recent SOS Events")
-    st.dataframe(df_sos)
+    if not df_sos.empty:
+        st.dataframe(df_sos)
+    else:
+        st.info("No SOS events found.")
+    
     st.markdown("### Recent Community Activity")
-    st.dataframe(df_comm)
+    if not df_comm.empty:
+        st.dataframe(df_comm)
+    else:
+        st.info("No community updates found.")
 
 # --- SAFE ROUTE SUGGESTION ---
 elif menu == "Safe Routes":
@@ -225,7 +236,7 @@ elif menu == "Alerts":
         st.warning(
             f"🚨 **{data.get('username','Unknown')}** reported: {data.get('message','')}\n"
             f"📍 Location: {data.get('latitude','N/A')}, {data.get('longitude','N/A')}\n"
-            f"🕒 {data.get('timestamp')}"
+            f"🕒 {data.get('timestamp','')}"
         )
 
 # --- ABOUT ---
