@@ -20,26 +20,30 @@ lang = st.sidebar.selectbox(
 
 # --- Translations Dictionary ---
 translations = {
-    "title": {
-        "English": "🌊 BlueWave AI - Fishermen Safety Assistant",
-        "Hindi": "🌊 ब्लूवेव एआई - मछुआरों के लिए सुरक्षा सहायक",
-        "Tamil": "🌊 புளூவேவ் ஏ.ஐ - மீனவர்களின் பாதுகாப்பு உதவி",
-        "Telugu": "🌊 బ్లూవేవ్ ఎ.ఐ - మత్స్యకారుల భద్రతా సహాయకుడు"
-    },
-    "login": {
-        "English": "🔐 Login",
-        "Hindi": "🔐 लॉगिन",
-        "Tamil": "🔐 உள்நுழைவு",
-        "Telugu": "🔐 లాగిన్"
-    },
+    "title": {"English":"🌊 BlueWave AI - Fishermen Safety Assistant","Hindi":"🌊 ब्लूवेव एआई - मछुआरों के लिए सुरक्षा सहायक","Tamil":"🌊 புளூவேவ் ஏ.ஐ - மீனவர்களின் பாதுகாப்பு உதவி","Telugu":"🌊 బ్లూవేవ్ ఎ.ఐ - మత్స్యకారుల భద్రతా సహాయకుడు"},
+    "login": {"English":"🔐 Login","Hindi":"🔐 लॉगिन","Tamil":"🔐 உள்நுழைவு","Telugu":"🔐 లాగిన్"},
     "username": {"English":"Username","Hindi":"उपयोगकर्ता नाम","Tamil":"பயனர்பெயர்","Telugu":"వాడుకరి పేరు"},
     "password": {"English":"Password","Hindi":"पासवर्ड","Tamil":"கடவுச்சொல்","Telugu":"పాస్వర్డ్"},
     "send_sos": {"English":"🚨 Send Emergency SOS","Hindi":"🚨 आपातकालीन SOS भेजें","Tamil":"🚨 அவசர SOS அனுப்பு","Telugu":"🚨 అత్యవసర SOS పంపండి"},
+    "sos_message": {"English":"Message","Hindi":"संदेश","Tamil":"செய்தி","Telugu":"సందేశం"},
+    "latitude": {"English":"Latitude (optional)","Hindi":"अक्षांश (वैकल्पिक)","Tamil":"அட்சாங்ஸ் (விருப்பமானது)","Telugu":"అక్షాంశం (ఐచ్ఛికం)"},
+    "longitude": {"English":"Longitude (optional)","Hindi":"देशांतर (वैकल्पिक)","Tamil":"உயர்நிலை (விருப்பமானது)","Telugu":"రేఖాంశం (ఐచ్ఛికం)"},
     "alerts": {"English":"📢 Nearby Alerts","Hindi":"📢 पास के अलर्ट","Tamil":"📢 அருகிலுள்ள எச்சரிக்கைகள்","Telugu":"📢 సమీప హెచ్చరికలు"},
     "about": {"English":"🌊 About BlueWave AI","Hindi":"🌊 ब्लूवेव एआई के बारे में","Tamil":"🌊 புளூவேவ் ஏ.ஐ பற்றி","Telugu":"🌊 బ్లూవేవ్ ఎ.ఐ గురించి"},
     "login_success":{"English":"Logged in successfully!","Hindi":"सफलतापूर्वक लॉगिन किया गया!","Tamil":"வெற்றிகரமாக உள்நுழைந்தது!","Telugu":"విజయవంతంగా లాగిన్ అయ్యారు!"},
     "login_error":{"English":"Invalid username or password","Hindi":"अमान्य उपयोगकर्ता नाम या पासवर्ड","Tamil":"தவறான பயனர்பெயர் அல்லது கடவுச்சொல்","Telugu":"తప్పు వాడుకరి పేరు లేదా పాస్వర్డ్"},
-    "sos_sent":{"English":"SOS Alert Sent!","Hindi":"SOS अलर्ट भेजा गया!","Tamil":"SOS எச்சரிக்கை அனுப்பப்பட்டது!","Telugu":"SOS హెచ్చరిక పంపబడింది!"}
+    "sos_sent":{"English":"SOS Alert Sent!","Hindi":"SOS अलर्ट भेजा गया!","Tamil":"SOS எச்சரிக்கை அனுப்பப்பட்டது!","Telugu":"SOS హెచ్చరిక పంపబడింది!"},
+    "login_required":{"English":"Please login to proceed","Hindi":"कृपया आगे बढ़ने के लिए लॉगिन करें","Tamil":"தொடர நீங்கள் உள்நுழையவும்","Telugu":"దయచేసి కొనసాగడానికి లాగిన్ అవ్వండి"},
+    "update_location":{"English":"Update Location","Hindi":"स्थान अपडेट करें","Tamil":"இருப்பிடத்தை புதுப்பிக்கவும்","Telugu":"స్థానం నవీకరించండి"},
+    "location_updated":{"English":"Location updated","Hindi":"स्थान अपडेट किया गया","Tamil":"இருப்பிடம் புதுப்பிக்கப்பட்டது","Telugu":"స్థానం నవీకరించబడింది"},
+    "weather_advisory":{"English":"Weather & Sea Advisory","Hindi":"मौसम और समुद्र सलाह","Tamil":"வானிலை மற்றும் கடல் ஆலோசனை","Telugu":"వాతావరణ & సముద్ర సూచనలు"},
+    "community_updates":{"English":"Community Updates","Hindi":"समुदाय अपडेट्स","Tamil":"சமூக புதுப்பிப்புகள்","Telugu":"సముదాయ నవీకరణలు"},
+    "ai_prediction":{"English":"AI Fish Catch Prediction","Hindi":"एआई मछली पकड़ने की भविष्यवाणी","Tamil":"ஏ.ஐ மீன் பிடிக்கும் கணிப்பு","Telugu":"ఏఐ చేప పట్టు భవిష్యవాణి"},
+    "upload_json":{"English":"Upload JSON file","Hindi":"JSON फ़ाइल अपलोड करें","Tamil":"JSON கோப்பை பதிவேற்றவும்","Telugu":"JSON ఫైల్ అప్‌లోడ్ చేయండి"},
+    "fishing_trends":{"English":"Fishing Trends","Hindi":"मछली पकड़ने के रुझान","Tamil":"மீன் பிடிக்கும் போக்குகள்","Telugu":"చేప పట్టు ధోరణులు"},
+    "safe_zone_prediction":{"English":"Safe Zone Prediction","Hindi":"सुरक्षित क्षेत्र की भविष्यवाणी","Tamil":"பாதுகாப்பான பகுதி கணிப்பு","Telugu":"సురక్షిత ప్రాంతం భవిష్యవాణి"},
+    "safe_routes":{"English":"Safe Routes","Hindi":"सुरक्षित मार्ग","Tamil":"பாதுகாப்பான வழிகள்","Telugu":"సురక్షిత మార్గాలు"},
+    "voice_assistant":{"English":"Voice Assistant","Hindi":"वॉइस असिस्टेंट","Tamil":"குரல் உதவியாளர்","Telugu":"వాయిస్ అసిస్టెంట్"}
 }
 
 # --- Firebase Setup ---
@@ -66,26 +70,26 @@ def speak(text):
         </script>
         """, height=0)
 
-# --- Browser-safe voice input ---
+# --- Browser Voice Input ---
 def get_browser_voice_command():
     st.info("🎤 Enter your command here (simulate voice input)")
-    command = st.text_input("Voice Command (type what you would speak)")
+    command = st.text_input(translations["voice_assistant"][lang])
     return command.lower() if command else ""
 
 # --- Sidebar Navigation ---
 menu = st.sidebar.radio(
-    "📱 Navigation",
+    translations["title"][lang],
     [
         translations["login"][lang],
         translations["send_sos"][lang],
-        "🤖 AI Prediction",
-        "🌤 Weather Advisory",
-        "💬 Community Updates",
+        translations["ai_prediction"][lang],
+        translations["weather_advisory"][lang],
+        translations["community_updates"][lang],
         "📍 Real-time Location",
-        "🗺️ Safe Zone Prediction",
-        "🎤 Voice Assistant",
-        "📈 Fishing Trends",
-        "🗺️ Safe Routes",
+        translations["safe_zone_prediction"][lang],
+        translations["voice_assistant"][lang],
+        translations["fishing_trends"][lang],
+        translations["safe_routes"][lang],
         translations["alerts"][lang],
         translations["about"][lang]
     ]
@@ -114,9 +118,9 @@ if menu == translations["login"][lang]:
 elif menu == translations["send_sos"][lang]:
     st.subheader(translations["send_sos"][lang])
     if st.session_state.user:
-        msg = st.text_area("Message / संदेश / செய்தி / సందేశం")
-        lat = st.text_input("Latitude (optional)")
-        lon = st.text_input("Longitude (optional)")
+        msg = st.text_area(translations["sos_message"][lang])
+        lat = st.text_input(translations["latitude"][lang])
+        lon = st.text_input(translations["longitude"][lang])
         if st.button(translations["send_sos"][lang]):
             sos_id = str(uuid.uuid4())
             db.collection("sos_alerts").document(sos_id).set({
@@ -129,7 +133,7 @@ elif menu == translations["send_sos"][lang]:
             st.success(translations["sos_sent"][lang])
             speak(translations["sos_sent"][lang])
     else:
-        st.warning("Please login to send SOS / लॉगिन करें / உள்நுழையவும் / లాగిన్ అవ్వండి")
+        st.warning(translations["login_required"][lang])
 
 # --- ALERTS ---
 elif menu == translations["alerts"][lang]:
@@ -140,31 +144,29 @@ elif menu == translations["alerts"][lang]:
             d = doc.to_dict()
             st.info(f"{d.get('username','Unknown')} at ({d.get('latitude','N/A')}, {d.get('longitude','N/A')}): {d.get('message','No message')}")
     else:
-        st.warning("Login to view alerts / लॉगिन करें / உள்நுழையவும் / లాగిన్ అవ్వండి")
+        st.warning(translations["login_required"][lang])
 
 # --- AI Prediction ---
-elif menu == "🤖 AI Prediction":
-    st.subheader("🤖 AI Fish Catch Prediction")
-    st.markdown("Upload environmental JSON data (temperature, salinity, etc.)")
-    uploaded_file = st.file_uploader("Upload JSON file")
+elif menu == translations["ai_prediction"][lang]:
+    st.subheader(translations["ai_prediction"][lang])
+    st.markdown(translations["upload_json"][lang])
+    uploaded_file = st.file_uploader(translations["upload_json"][lang])
     if uploaded_file:
         data = json.load(uploaded_file)
-        # Dummy prediction logic (replace with your model)
         score = 0.7
         st.success(f"Predicted Fish Availability Score: {score*100:.1f}%")
         speak(f"Predicted Fish Availability Score {score*100:.1f} percent")
 
 # --- Weather Advisory ---
-elif menu == "🌤 Weather Advisory":
-    st.subheader("🌤 Weather & Sea Advisory")
-    lat = st.number_input("Latitude", value=8.5)
-    lon = st.number_input("Longitude", value=78.1)
+elif menu == translations["weather_advisory"][lang]:
+    st.subheader(translations["weather_advisory"][lang])
+    lat = st.number_input(translations["latitude"][lang], value=8.5)
+    lon = st.number_input(translations["longitude"][lang], value=78.1)
     st.info(f"Weather advisory for ({lat},{lon})")
-    # Placeholder: replace with actual weather API if needed
 
 # --- Community Updates ---
-elif menu == "💬 Community Updates":
-    st.subheader("💬 Community Updates")
+elif menu == translations["community_updates"][lang]:
+    st.subheader(translations["community_updates"][lang])
     updates_ref = db.collection("community_updates").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(5)
     for doc in updates_ref.stream():
         d = doc.to_dict()
@@ -174,45 +176,40 @@ elif menu == "💬 Community Updates":
 elif menu == "📍 Real-time Location":
     st.subheader("📍 Real-time Location Tracker")
     if st.session_state.user:
-        lat = st.number_input("Latitude", value=8.5, key="loc_lat")
-        lon = st.number_input("Longitude", value=78.1, key="loc_lon")
-        if st.button("Update Location"):
+        lat = st.number_input(translations["latitude"][lang], value=8.5, key="loc_lat")
+        lon = st.number_input(translations["longitude"][lang], value=78.1, key="loc_lon")
+        if st.button(translations["update_location"][lang]):
             db.collection("locations").document(st.session_state.user).set({
                 "username": st.session_state.user,
                 "latitude": lat,
                 "longitude": lon,
                 "timestamp": datetime.utcnow()
             })
-            st.success("Location updated")
+            st.success(translations["location_updated"][lang])
         map_url = f"https://www.google.com/maps/embed/v1/view?key={st.secrets['GOOGLE_MAPS_API_KEY']}&center={lat},{lon}&zoom=10&maptype=satellite"
         st.components.v1.iframe(map_url, height=500, width=800)
     else:
-        st.warning("Please login to update location")
+        st.warning(translations["login_required"][lang])
 
 # --- Safe Zone Prediction ---
-elif menu == "🗺️ Safe Zone Prediction":
-    st.subheader("🗺️ Safe Zone Prediction")
-    # Dummy placeholder: replace with actual logic
+elif menu == translations["safe_zone_prediction"][lang]:
+    st.subheader(translations["safe_zone_prediction"][lang])
     st.info("Safe zones based on recent SOS and weather data")
 
 # --- Safe Routes ---
-elif menu == "🗺️ Safe Routes":
-    st.subheader("🗺️ Safe Routes Planner")
-    # Dummy placeholder: replace with your route planning algorithm
+elif menu == translations["safe_routes"][lang]:
+    st.subheader(translations["safe_routes"][lang])
     st.info("Safe routes between port and fishing zones")
 
 # --- Fishing Trends ---
-elif menu == "📈 Fishing Trends":
-    st.subheader("📈 Fishing Trends")
-    df = pd.DataFrame({
-        "Day": ["Mon","Tue","Wed","Thu","Fri"],
-        "Catch Score":[0.7,0.8,0.6,0.9,0.75]
-    })
+elif menu == translations["fishing_trends"][lang]:
+    st.subheader(translations["fishing_trends"][lang])
+    df = pd.DataFrame({"Day":["Mon","Tue","Wed","Thu","Fri"],"Catch Score":[0.7,0.8,0.6,0.9,0.75]})
     st.line_chart(df.set_index("Day")["Catch Score"])
 
 # --- Voice Assistant ---
-elif menu == "🎤 Voice Assistant":
-    st.subheader("🎤 Voice Assistant")
+elif menu == translations["voice_assistant"][lang]:
+    st.subheader(translations["voice_assistant"][lang])
     command = get_browser_voice_command()
     if command:
         st.info(f"Command received: {command}")
@@ -233,6 +230,7 @@ elif menu == translations["about"][lang]:
     - Voice assistant commands
     - Fully Cloud-compatible & mobile-friendly
     """)
+
 
 
 
