@@ -20,108 +20,24 @@ lang = st.sidebar.selectbox(
 
 # --- Translations Dictionary ---
 translations = {
-    "title": {
-        "English":"🌊 BlueWave AI - Fishermen Safety Assistant",
-        "Hindi":"🌊 ब्लूवेव एआई - मछुआरों के लिए सुरक्षा सहायक",
-        "Tamil":"🌊 புளூவேவ் ஏ.ஐ - மீனவர்களின் பாதுகாப்பு உதவி",
-        "Telugu":"🌊 బ్లూవేవ్ ఎ.ఐ - మత్స్యకారుల భద్రతా సహాయకుడు"
-    },
-    "send_sos": {
-        "English":"🚨 Send Emergency SOS",
-        "Hindi":"🚨 आपातकालीन SOS भेजें",
-        "Tamil":"🚨 அவசர SOS அனுப்பு",
-        "Telugu":"🚨 అత్యవసర SOS పంపండి"
-    },
-    "sos_message": {
-        "English":"Message",
-        "Hindi":"संदेश",
-        "Tamil":"செய்தி",
-        "Telugu":"సందేశం"
-    },
-    "latitude": {
-        "English":"Latitude (optional)",
-        "Hindi":"अक्षांश (वैकल्पिक)",
-        "Tamil":"அட்சாங்ஸ் (விருப்பமானது)",
-        "Telugu":"అక్షాంశం (ఐచ్ఛికం)"
-    },
-    "longitude": {
-        "English":"Longitude (optional)",
-        "Hindi":"देशांतर (वैकल्पिक)",
-        "Tamil":"உயர்நிலை (விருப்பமானது)",
-        "Telugu":"రేఖాంశం (ఐచ్ఛికం)"
-    },
-    "alerts": {
-        "English":"📢 Nearby Alerts",
-        "Hindi":"📢 पास के अलर्ट",
-        "Tamil":"📢 அருகிலுள்ள எச்சரிக்கைகள்",
-        "Telugu":"📢 సమీప హెచ్చరికలు"
-    },
-    "ai_prediction": {
-        "English":"AI Fish Catch Prediction",
-        "Hindi":"एआई मछली पकड़ने की भविष्यवाणी",
-        "Tamil":"ஏ.ஐ மீன் பிடிக்கும் கணிப்பு",
-        "Telugu":"ఏఐ చేప పట్టు భవిష్యవాణి"
-    },
-    "upload_json": {
-        "English":"Upload JSON file",
-        "Hindi":"JSON फ़ाइल अपलोड करें",
-        "Tamil":"JSON கோப்பை பதிவேற்றவும்",
-        "Telugu":"JSON ఫైల్ అప్‌లోడ్ చేయండి"
-    },
-    "weather_advisory": {
-        "English":"Weather & Sea Advisory",
-        "Hindi":"मौसम और समुद्र सलाह",
-        "Tamil":"வானிலை மற்றும் கடல் ஆலோசனை",
-        "Telugu":"వాతావరణ & సముద్ర సూచనలు"
-    },
-    "community_updates": {
-        "English":"Community Updates",
-        "Hindi":"समुदाय अपडेट्स",
-        "Tamil":"சமூக புதுப்பிப்புகள்",
-        "Telugu":"సముదాయ నవీకరణలు"
-    },
-    "safe_zone_prediction": {
-        "English":"Safe Zone Prediction",
-        "Hindi":"सुरक्षित क्षेत्र की भविष्यवाणी",
-        "Tamil":"பாதுகாப்பான பகுதி கணிப்பு",
-        "Telugu":"సురక్షిత ప్రాంతం భవిష్యవాణి"
-    },
-    "safe_routes": {
-        "English":"Safe Routes",
-        "Hindi":"सुरक्षित मार्ग",
-        "Tamil":"பாதுகாப்பான வழிகள்",
-        "Telugu":"సురక్షిత మార్గాలు"
-    },
-    "voice_assistant": {
-        "English":"Voice Assistant",
-        "Hindi":"वॉइस असिस्टेंट",
-        "Tamil":"குரல் உதவியாளர்",
-        "Telugu":"వాయిస్ అసిస్టెంట్"
-    },
-    "fishing_trends": {
-        "English":"Fishing Trends",
-        "Hindi":"मछली पकड़ने के रुझान",
-        "Tamil":"மீன் பிடிக்கும் போக்குகள்",
-        "Telugu":"చేప పట్టు ధోరణులు"
-    },
-    "update_location": {
-        "English":"Update Location",
-        "Hindi":"स्थान अपडेट करें",
-        "Tamil":"இருப்பிடத்தை புதுப்பிக்கவும்",
-        "Telugu":"స్థానం నవీకరించండి"
-    },
-    "location_updated": {
-        "English":"Location updated",
-        "Hindi":"स्थान अपडेट किया गया",
-        "Tamil":"இருப்பிடம் புதுப்பிக்கப்பட்டது",
-        "Telugu":"స్థానం నవీకరించబడింది"
-    },
-    "sos_sent": {
-        "English":"SOS Alert Sent!",
-        "Hindi":"SOS अलर्ट भेजा गया!",
-        "Tamil":"SOS எச்சரிக்கை அனுப்பப்பட்டது!",
-        "Telugu":"SOS హెచ్చరిక పంపబడింది!"
-    }
+    "title": {"English":"🌊 BlueWave AI - Fishermen Safety Assistant","Hindi":"🌊 ब्लूवेव एआई - मछुआरों के लिए सुरक्षा सहायक","Tamil":"🌊 புளூவேவ் ஏ.ஐ - மீனவர்களின் பாதுகாப்பு உதவி","Telugu":"🌊 బ్లూవేవ్ ఎ.ఐ - మత్స్యకారుల భద్రతా సహాయకుడు"},
+    "send_sos": {"English":"🚨 Send Emergency SOS","Hindi":"🚨 आपातकालीन SOS भेजें","Tamil":"🚨 அவசர SOS அனுப்பு","Telugu":"🚨 అత్యవసర SOS పంపండి"},
+    "sos_message": {"English":"Message","Hindi":"संदेश","Tamil":"செய்தி","Telugu":"సందేశం"},
+    "latitude": {"English":"Latitude (optional)","Hindi":"अक्षांश (वैकल्पिक)","Tamil":"அட்சாங்ஸ் (விருப்பமானது)","Telugu":"అక్షాంశం (ఐచ్ఛికం)"},
+    "longitude": {"English":"Longitude (optional)","Hindi":"देशांतर (वैकल्पिक)","Tamil":"உயர்நிலை (விருப்பமானது)","Telugu":"రేఖాంశం (ఐచ్ఛికం)"},
+    "alerts": {"English":"📢 Nearby Alerts","Hindi":"📢 पास के अलर्ट","Tamil":"📢 அருகிலுள்ள எச்சரிக்கைகள்","Telugu":"📢 సమీప హెచ్చరికలు"},
+    "ai_prediction": {"English":"AI Fish Catch Prediction","Hindi":"एआई मछली पकड़ने की भविष्यवाणी","Tamil":"ஏ.ஐ மீன் பிடிக்கும் கணிப்பு","Telugu":"ఏఐ చేప పట్టు భవిష్యవాణి"},
+    "upload_json": {"English":"Upload JSON file","Hindi":"JSON फ़ाइल अपलोड करें","Tamil":"JSON கோப்பை பதிவேற்றவும்","Telugu":"JSON ఫైల్ అప్‌లోడ్ చేయండి"},
+    "weather_advisory": {"English":"Weather & Sea Advisory","Hindi":"मौसम और समुद्र सलाह","Tamil":"வானிலை மற்றும் கடல் ஆலோசனை","Telugu":"వాతావరణ & సముద్ర సూచనలు"},
+    "community_updates": {"English":"Community Updates","Hindi":"समुदाय अपडेट्स","Tamil":"சமூக புதுப்பிப்புகள்","Telugu":"సముదాయ నవీకరణలు"},
+    "safe_zone_prediction": {"English":"Safe Zone Prediction","Hindi":"सुरक्षित क्षेत्र की भविष्यवाणी","Tamil":"பாதுகாப்பான பகுதி கணிப்பு","Telugu":"సురక్షిత ప్రాంతం భవిష్యవాణి"},
+    "safe_routes": {"English":"Safe Routes","Hindi":"सुरक्षित मार्ग","Tamil":"பாதுகாப்பான வழிகள்","Telugu":"సురక్షిత మార్గాలు"},
+    "voice_assistant": {"English":"Voice Assistant","Hindi":"वॉइस असिस्टेंट","Tamil":"குரல் உதவியாளர்","Telugu":"వాయిస్ అసిస్టెంట్"},
+    "fishing_trends": {"English":"Fishing Trends","Hindi":"मछली पकड़ने के रुझान","Tamil":"மீன் பிடிக்கும் போக்குகள்","Telugu":"చేప పట్టు ధోరణులు"},
+    "update_location": {"English":"Update Location","Hindi":"स्थान अपडेट करें","Tamil":"இருப்பிடத்தை புதுப்பிக்கவும்","Telugu":"స్థానం నవీకరించండి"},
+    "location_updated": {"English":"Location updated","Hindi":"स्थान अपडेट किया गया","Tamil":"இருப்பிடம் புதுப்பிக்கப்பட்டது","Telugu":"స్థానం నవీకరించబడింది"},
+    "sos_sent": {"English":"SOS Alert Sent!","Hindi":"SOS अलर्ट भेजा गया!","Tamil":"SOS எச்சரிக்கை அனுப்பப்பட்டது!","Telugu":"SOS హెచ్చరిక పంపబడింది!"},
+    "about": {"English":"About","Hindi":"के बारे में","Tamil":"பற்றி","Telugu":"గురించి"},
 }
 
 # --- Firebase Setup ---
@@ -153,7 +69,7 @@ menu = st.sidebar.radio(
         translations["fishing_trends"][lang],
         translations["safe_routes"][lang],
         translations["alerts"][lang],
-        translations["title"][lang]  # About
+        translations["about"][lang]  # About page
     ]
 )
 st.sidebar.markdown("---")
@@ -178,7 +94,7 @@ if menu == translations["send_sos"][lang]:
         speak(translations["sos_sent"][lang])
 
 # --- ALERTS ---
-elif menu == "📢 Nearby Alerts":
+elif menu == translations["alerts"][lang]:
     st.subheader(translations["alerts"][lang])
     sos_ref = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10)
     alerts_text = ""
@@ -199,7 +115,7 @@ elif menu == translations["ai_prediction"][lang]:
             score = 0.7
             st.success(f"Predicted Fish Availability Score: {score*100:.1f}%")
             speak(f"Predicted Fish Availability Score {score*100:.1f} percent")
-        except Exception as e:
+        except Exception:
             st.error("Invalid JSON file. Please upload a correct JSON.")
             speak("Invalid JSON file. Please upload a correct JSON.")
 
@@ -224,9 +140,7 @@ elif menu == "📍 Real-time Location":
 # --- Safe Zone Prediction ---
 elif menu == translations["safe_zone_prediction"][lang]:
     st.subheader(translations["safe_zone_prediction"][lang])
-    recent_sos = db.collection("sos_alerts").where(
-        "timestamp", ">=", datetime.utcnow() - timedelta(hours=24)
-    ).stream()
+    recent_sos = db.collection("sos_alerts").where("timestamp", ">=", datetime.utcnow() - timedelta(hours=24)).stream()
     danger_points = []
     for doc in recent_sos:
         d = doc.to_dict()
@@ -247,9 +161,7 @@ elif menu == translations["safe_zone_prediction"][lang]:
 elif menu == translations["safe_routes"][lang]:
     st.subheader(translations["safe_routes"][lang])
     port = [8.5, 78.0]
-    recent_sos = db.collection("sos_alerts").where(
-        "timestamp", ">=", datetime.utcnow() - timedelta(hours=24)
-    ).stream()
+    recent_sos = db.collection("sos_alerts").where("timestamp", ">=", datetime.utcnow() - timedelta(hours=24)).stream()
     danger_points = []
     for doc in recent_sos:
         d = doc.to_dict()
@@ -304,8 +216,8 @@ elif menu == translations["community_updates"][lang]:
         speak(updates_text)
 
 # --- ABOUT ---
-elif menu == translations["About"][lang]:
-    st.subheader(translations["About"][lang])
+elif menu == translations["about"][lang]:
+    st.subheader(translations["about"][lang])
     st.markdown("""
     BlueWave AI is an advanced assistant platform for fishermen:
     - Send & receive SOS alerts
@@ -317,4 +229,3 @@ elif menu == translations["About"][lang]:
     - Voice assistant commands
     - Fully Cloud-compatible & mobile-friendly
     """)
-
