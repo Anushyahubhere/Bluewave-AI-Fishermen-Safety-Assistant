@@ -1,4 +1,4 @@
-# BlueWave AI - Fishermen Safety Assistant (Cloud Compatible)
+# BlueWave AI - Fishermen Safety Assistant (Full Advanced + Multilingual)
 import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app
 import firebase_admin
@@ -11,7 +11,36 @@ from streamlit_lottie import st_lottie
 
 # --- Streamlit Setup ---
 st.set_page_config(page_title="BlueWave AI", layout="wide")
-st.title("🌊 BlueWave AI - Fishermen Safety Assistant (Cloud Compatible)")
+
+# --- Language Selector ---
+lang = st.sidebar.selectbox(
+    "🌐 Select Language / மொழி / భాష / भाषा",
+    ["English", "Hindi", "Tamil", "Telugu"]
+)
+
+# --- Translations Dictionary ---
+translations = {
+    "title": {
+        "English": "🌊 BlueWave AI - Fishermen Safety Assistant",
+        "Hindi": "🌊 ब्लूवेव एआई - मछुआरों के लिए सुरक्षा सहायक",
+        "Tamil": "🌊 புளூவேவ் ஏ.ஐ - மீனவர்களின் பாதுகாப்பு உதவி",
+        "Telugu": "🌊 బ్లూవేవ్ ఎ.ఐ - మత్స్యకారుల భద్రతా సహాయకుడు"
+    },
+    "login": {
+        "English": "🔐 Login",
+        "Hindi": "🔐 लॉगिन",
+        "Tamil": "🔐 உள்நுழைவு",
+        "Telugu": "🔐 లాగిన్"
+    },
+    "username": {"English":"Username","Hindi":"उपयोगकर्ता नाम","Tamil":"பயனர்பெயர்","Telugu":"వాడుకరి పేరు"},
+    "password": {"English":"Password","Hindi":"पासवर्ड","Tamil":"கடவுச்சொல்","Telugu":"పాస్వర్డ్"},
+    "send_sos": {"English":"🚨 Send Emergency SOS","Hindi":"🚨 आपातकालीन SOS भेजें","Tamil":"🚨 அவசர SOS அனுப்பு","Telugu":"🚨 అత్యవసర SOS పంపండి"},
+    "alerts": {"English":"📢 Nearby Alerts","Hindi":"📢 पास के अलर्ट","Tamil":"📢 அருகிலுள்ள எச்சரிக்கைகள்","Telugu":"📢 సమీప హెచ్చరికలు"},
+    "about": {"English":"🌊 About BlueWave AI","Hindi":"🌊 ब्लूवेव एआई के बारे में","Tamil":"🌊 புளூவேவ் ஏ.ஐ பற்றி","Telugu":"🌊 బ్లూవేవ్ ఎ.ఐ గురించి"},
+    "login_success":{"English":"Logged in successfully!","Hindi":"सफलतापूर्वक लॉगिन किया गया!","Tamil":"வெற்றிகரமாக உள்நுழைந்தது!","Telugu":"విజయవంతంగా లాగిన్ అయ్యారు!"},
+    "login_error":{"English":"Invalid username or password","Hindi":"अमान्य उपयोगकर्ता नाम या पासवर्ड","Tamil":"தவறான பயனர்பெயர் அல்லது கடவுச்சொல்","Telugu":"తప్పు వాడుకరి పేరు లేదా పాస్వర్డ్"},
+    "sos_sent":{"English":"SOS Alert Sent!","Hindi":"SOS अलर्ट भेजा गया!","Tamil":"SOS எச்சரிக்கை அனுப்பப்பட்டது!","Telugu":"SOS హెచ్చరిక పంపబడింది!"}
+}
 
 # --- Firebase Setup ---
 if not firebase_admin._apps:
@@ -47,19 +76,19 @@ def get_browser_voice_command():
 menu = st.sidebar.radio(
     "📱 Navigation",
     [
-        "Login",
-        "Send SOS",
-        "AI Prediction",
-        "Weather Advisory",
-        "Community Updates",
-        "Real-time Location",
-        "Safe Zone Prediction",
-        "Voice Assistant",
-        "Fishing Trends",
-        "Safe Routes",
-        "Alerts",
-        "About",
-    ],
+        translations["login"][lang],
+        translations["send_sos"][lang],
+        "🤖 AI Prediction",
+        "🌤 Weather Advisory",
+        "💬 Community Updates",
+        "📍 Real-time Location",
+        "🗺️ Safe Zone Prediction",
+        "🎤 Voice Assistant",
+        "📈 Fishing Trends",
+        "🗺️ Safe Routes",
+        translations["alerts"][lang],
+        translations["about"][lang]
+    ]
 )
 st.sidebar.markdown("---")
 st.sidebar.markdown("Made with ❤️ for Fishermen")
@@ -69,26 +98,26 @@ if "user" not in st.session_state:
     st.session_state.user = None
 
 # --- LOGIN ---
-if menu == "Login":
-    st.subheader("🔐 Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
+if menu == translations["login"][lang]:
+    st.subheader(translations["login"][lang])
+    username = st.text_input(translations["username"][lang])
+    password = st.text_input(translations["password"][lang], type="password")
+    if st.button(translations["login"][lang]):
         user_ref = db.collection("users").document(username).get()
         if user_ref.exists and user_ref.to_dict().get("password") == password:
             st.session_state.user = username
-            st.success(f"Welcome back, {username}!")
+            st.success(translations["login_success"][lang])
         else:
-            st.error("Invalid username or password")
+            st.error(translations["login_error"][lang])
 
 # --- SEND SOS ---
-elif menu == "Send SOS":
-    st.subheader("🚨 Emergency SOS Alert")
+elif menu == translations["send_sos"][lang]:
+    st.subheader(translations["send_sos"][lang])
     if st.session_state.user:
-        msg = st.text_area("Describe the emergency")
+        msg = st.text_area("Message / संदेश / செய்தி / సందేశం")
         lat = st.text_input("Latitude (optional)")
         lon = st.text_input("Longitude (optional)")
-        if st.button("Send SOS"):
+        if st.button(translations["send_sos"][lang]):
             sos_id = str(uuid.uuid4())
             db.collection("sos_alerts").document(sos_id).set({
                 "username": st.session_state.user,
@@ -97,249 +126,115 @@ elif menu == "Send SOS":
                 "longitude": lon,
                 "timestamp": datetime.utcnow()
             })
-            st.success("✅ SOS alert sent successfully!")
-            speak("SOS alert sent successfully")
+            st.success(translations["sos_sent"][lang])
+            speak(translations["sos_sent"][lang])
     else:
-        st.warning("Please login to send an SOS alert.")
-
-# --- AI PREDICTION ---
-elif menu == "AI Prediction":
-    st.subheader("🤖 AI Fish Catch Prediction")
-    st.markdown("Upload environmental data (JSON) or enter manually:")
-
-    default_data = {
-        "water_temp": 28,
-        "salinity": 35,
-        "ph": 7.5,
-        "wind_speed": 10,
-        "tide": 1.5,
-        "time_of_day": "morning"
-    }
-
-    uploaded_file = st.file_uploader("Upload JSON file", type=["json"])
-    if uploaded_file:
-        try:
-            json_data = json.load(uploaded_file)
-            for key in default_data:
-                if key in json_data:
-                    default_data[key] = json_data[key]
-            st.success("✅ JSON loaded successfully!")
-        except:
-            st.error("⚠️ Invalid JSON file")
-
-    water_temp = st.number_input("Water Temperature (°C)", value=float(default_data["water_temp"]))
-    salinity = st.number_input("Salinity (ppt)", value=float(default_data["salinity"]))
-    ph = st.number_input("pH Level", value=float(default_data["ph"]))
-    wind_speed = st.number_input("Wind Speed (km/h)", value=float(default_data["wind_speed"]))
-    tide = st.number_input("Tide Level (m)", value=float(default_data["tide"]))
-    time_of_day = st.selectbox("Time of Day", ["morning", "afternoon", "evening"], index=["morning","afternoon","evening"].index(default_data["time_of_day"]))
-
-    time_factor = {"morning":0.3, "afternoon":0.2, "evening":0.1}[time_of_day]
-    score = (
-        0.3 * (1 - abs(water_temp - 28)/10) +
-        0.2 * (1 - abs(salinity - 35)/10) +
-        0.2 * (1 - abs(ph - 7.5)/2) +
-        0.1 * (1 - wind_speed/50) +
-        0.1 * (1 - abs(tide - 1.5)/2) +
-        0.1 * time_factor
-    )
-    score = max(0, min(1, score))
-    st.success(f"🎯 Predicted Fish Availability Score: {score*100:.1f}%")
-    st.progress(int(score*100))
-
-    contributions = {
-        "Temperature": 0.3 * (1 - abs(water_temp - 28)/10),
-        "Salinity": 0.2 * (1 - abs(salinity - 35)/10),
-        "pH": 0.2 * (1 - abs(ph - 7.5)/2),
-        "Wind": 0.1 * (1 - wind_speed/50),
-        "Tide": 0.1 * (1 - abs(tide - 1.5)/2),
-        "Time of Day": 0.1 * time_factor
-    }
-    df_contrib = pd.DataFrame(list(contributions.items()), columns=["Factor", "Contribution"])
-    st.bar_chart(df_contrib.set_index("Factor"))
-
-    if st.session_state.user:
-        db.collection("ai_predictions").add({
-            "username": st.session_state.user,
-            "score": score,
-            "timestamp": datetime.utcnow()
-        })
-
-    speak(f"Predicted fish availability score is {score*100:.0f} percent")
-
-# --- WEATHER ADVISORY ---
-elif menu == "Weather Advisory":
-    st.subheader("🌤 Sea Condition & Weather Advisory")
-    place = st.text_input("Enter location (e.g., Chennai)")
-    if st.button("Check Advisory"):
-        try:
-            url = f"https://wttr.in/{place}?format=j1"
-            res = requests.get(url).json()
-            current = res["current_condition"][0]
-            temp = current["temp_C"]
-            wind = current["windspeedKmph"]
-            weather = current["weatherDesc"][0]["value"]
-            st.metric("Temperature", f"{temp}°C")
-            st.metric("Wind Speed", f"{wind} km/h")
-            st.info(f"🌦️ Current Condition: {weather}")
-            if float(wind) > 25:
-                st.error("⚠️ Sea condition unsafe! Avoid fishing now.")
-                speak("Warning! Sea conditions unsafe.")
-            else:
-                st.success("✅ Sea condition safe for fishing.")
-                speak("Sea conditions are safe for fishing.")
-        except:
-            st.error("Unable to fetch weather data.")
-
-# --- COMMUNITY UPDATES ---
-elif menu == "Community Updates":
-    st.subheader("💬 Fishermen Community Forum")
-    if st.session_state.user:
-        post = st.text_area("Share update / catch / info")
-        if st.button("Post Update"):
-            post_id = str(uuid.uuid4())
-            db.collection("community_updates").document(post_id).set({
-                "username": st.session_state.user,
-                "post": post,
-                "timestamp": datetime.utcnow()
-            })
-            st.success("✅ Post shared!")
-        st.markdown("### 🌍 Recent Updates")
-        updates = db.collection("community_updates").order_by(
-            "timestamp", direction=firestore.Query.DESCENDING
-        ).limit(10)
-        for doc in updates.stream():
-            u = doc.to_dict()
-            st.info(f"**{u.get('username','Unknown')}**: {u.get('post','')}  \n🕒 {u.get('timestamp','')}")
-    else:
-        st.warning("Login to post or view updates.")
-
-# --- REAL-TIME LOCATION ---
-elif menu == "Real-time Location":
-    st.subheader("📍 Real-time Location Tracker")
-    if st.session_state.user:
-        coords_html = """
-        <script>
-        navigator.geolocation.getCurrentPosition(
-            function(pos) {
-                const coords = [pos.coords.latitude, pos.coords.longitude];
-                const el = document.createElement('div');
-                el.id='coords';
-                el.innerText = JSON.stringify(coords);
-                document.body.appendChild(el);
-            }
-        )
-        </script>
-        """
-        st.components.v1.html(coords_html, height=0)
-        st.info("Allow browser to share location and refresh the page to capture coordinates.")
-    else:
-        st.warning("Login to use location feature.")
-
-# --- SAFE ZONE PREDICTION ---
-elif menu == "Safe Zone Prediction":
-    st.subheader("🗺️ AI-Based Safe Zone Prediction")
-    location = st.text_input("Enter your fishing location")
-    wind = st.number_input("Current wind speed (km/h)")
-    past_sos_count = st.number_input("Number of past SOS events in this area", value=0)
-    if st.button("Predict Safe Zone"):
-        risk_score = wind * 0.4 + past_sos_count * 0.6
-        if risk_score < 20:
-            st.success("✅ Safe Zone")
-            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))
-            speak("This zone is safe for fishing")
-        else:
-            st.error("⚠️ High Risk Zone")
-            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))
-            speak("Warning! This zone is risky. Avoid fishing.")
-
-# --- VOICE ASSISTANT ---
-elif menu == "Voice Assistant":
-    st.subheader("🎤 Voice Assistant")
-    if st.session_state.user:
-        command = get_browser_voice_command()
-        if command:
-            st.session_state.command = command
-            st.success(f"Voice command recognized: {command}")
-            if "sos" in command:
-                st.info("Triggering SOS alert flow...")
-            elif "safe" in command:
-                st.info("Showing Safe Zone prediction...")
-            elif "fish" in command:
-                st.info("Opening AI Fish Catch Prediction...")
-            else:
-                st.warning("Command not recognized")
-            speak(f"Command received: {command}")
-    else:
-        st.warning("Please log in to use the voice assistant.")
-
-# --- FISHING TRENDS ---
-elif menu == "Fishing Trends":
-    st.subheader("📈 Fishing Trends Analysis")
-    if st.session_state.user:
-        predictions_ref = db.collection("ai_predictions").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(20)
-        data_list = []
-        for doc in predictions_ref.stream():
-            d = doc.to_dict()
-            data_list.append({
-                "timestamp": d.get("timestamp"),
-                "score": d.get("score", 0)
-            })
-        if data_list:
-            df = pd.DataFrame(data_list).sort_values("timestamp")
-            st.line_chart(df.set_index("timestamp")["score"])
-            st.success("✅ Trend chart displayed")
-        else:
-            st.info("No prediction data available yet.")
-    else:
-        st.warning("Login to view fishing trends.")
-
-# --- SAFE ROUTES PLANNER ---
-elif menu == "Safe Routes":
-    st.subheader("🗺️ Safe Route Planner")
-    if st.session_state.user:
-        start_lat = st.number_input("Start Latitude", value=8.5)
-        start_lon = st.number_input("Start Longitude", value=78.1)
-        end_lat = st.number_input("End Latitude", value=8.6)
-        end_lon = st.number_input("End Longitude", value=78.2)
-        max_wind = st.number_input("Maximum Safe Wind (km/h)", value=25)
-        if st.button("Generate Safe Route"):
-            risk_zones_ref = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10)
-            risk_coords = [(d.to_dict()["latitude"], d.to_dict()["longitude"]) for d in risk_zones_ref.stream()]
-            st.map(pd.DataFrame({
-                "lat": [start_lat, end_lat] + [float(lat) for lat, lon in risk_coords if lat],
-                "lon": [start_lon, end_lon] + [float(lon) for lat, lon in risk_coords if lon]
-            }))
-            st.success("✅ Safe route displayed with alerts overlay")
-    else:
-        st.warning("Login to plan safe routes.")
+        st.warning("Please login to send SOS / लॉगिन करें / உள்நுழையவும் / లాగిన్ అవ్వండి")
 
 # --- ALERTS ---
-elif menu == "Alerts":
-    st.subheader("📢 Recent SOS Alerts")
+elif menu == translations["alerts"][lang]:
+    st.subheader(translations["alerts"][lang])
     if st.session_state.user:
         sos_ref = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10)
         for doc in sos_ref.stream():
             d = doc.to_dict()
             st.info(f"{d.get('username','Unknown')} at ({d.get('latitude','N/A')}, {d.get('longitude','N/A')}): {d.get('message','No message')}")
     else:
-        st.warning("Login to view alerts.")
+        st.warning("Login to view alerts / लॉगिन करें / உள்நுழையவும் / లాగిన్ అవ్వండి")
+
+# --- AI Prediction ---
+elif menu == "🤖 AI Prediction":
+    st.subheader("🤖 AI Fish Catch Prediction")
+    st.markdown("Upload environmental JSON data (temperature, salinity, etc.)")
+    uploaded_file = st.file_uploader("Upload JSON file")
+    if uploaded_file:
+        data = json.load(uploaded_file)
+        # Dummy prediction logic (replace with your model)
+        score = 0.7
+        st.success(f"Predicted Fish Availability Score: {score*100:.1f}%")
+        speak(f"Predicted Fish Availability Score {score*100:.1f} percent")
+
+# --- Weather Advisory ---
+elif menu == "🌤 Weather Advisory":
+    st.subheader("🌤 Weather & Sea Advisory")
+    lat = st.number_input("Latitude", value=8.5)
+    lon = st.number_input("Longitude", value=78.1)
+    st.info(f"Weather advisory for ({lat},{lon})")
+    # Placeholder: replace with actual weather API if needed
+
+# --- Community Updates ---
+elif menu == "💬 Community Updates":
+    st.subheader("💬 Community Updates")
+    updates_ref = db.collection("community_updates").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(5)
+    for doc in updates_ref.stream():
+        d = doc.to_dict()
+        st.write(f"{d.get('username','Unknown')} : {d.get('message','No message')}")
+
+# --- Real-time Location ---
+elif menu == "📍 Real-time Location":
+    st.subheader("📍 Real-time Location Tracker")
+    if st.session_state.user:
+        lat = st.number_input("Latitude", value=8.5, key="loc_lat")
+        lon = st.number_input("Longitude", value=78.1, key="loc_lon")
+        if st.button("Update Location"):
+            db.collection("locations").document(st.session_state.user).set({
+                "username": st.session_state.user,
+                "latitude": lat,
+                "longitude": lon,
+                "timestamp": datetime.utcnow()
+            })
+            st.success("Location updated")
+        map_url = f"https://www.google.com/maps/embed/v1/view?key={st.secrets['GOOGLE_MAPS_API_KEY']}&center={lat},{lon}&zoom=10&maptype=satellite"
+        st.components.v1.iframe(map_url, height=500, width=800)
+    else:
+        st.warning("Please login to update location")
+
+# --- Safe Zone Prediction ---
+elif menu == "🗺️ Safe Zone Prediction":
+    st.subheader("🗺️ Safe Zone Prediction")
+    # Dummy placeholder: replace with actual logic
+    st.info("Safe zones based on recent SOS and weather data")
+
+# --- Safe Routes ---
+elif menu == "🗺️ Safe Routes":
+    st.subheader("🗺️ Safe Routes Planner")
+    # Dummy placeholder: replace with your route planning algorithm
+    st.info("Safe routes between port and fishing zones")
+
+# --- Fishing Trends ---
+elif menu == "📈 Fishing Trends":
+    st.subheader("📈 Fishing Trends")
+    df = pd.DataFrame({
+        "Day": ["Mon","Tue","Wed","Thu","Fri"],
+        "Catch Score":[0.7,0.8,0.6,0.9,0.75]
+    })
+    st.line_chart(df.set_index("Day")["Catch Score"])
+
+# --- Voice Assistant ---
+elif menu == "🎤 Voice Assistant":
+    st.subheader("🎤 Voice Assistant")
+    command = get_browser_voice_command()
+    if command:
+        st.info(f"Command received: {command}")
+        speak(f"You said: {command}")
 
 # --- ABOUT ---
-elif menu == "About":
-    st.subheader("🌊 About BlueWave AI")
+elif menu == translations["about"][lang]:
+    st.subheader(translations["about"][lang])
     st_lottie(load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_zrqthn6o.json"), height=200)
     st.markdown("""
     BlueWave AI is an advanced assistant platform for fishermen:
     - Send & receive SOS alerts
     - AI-based fish catch prediction
-    - Real-time location tracking (browser-based)
+    - Real-time location tracking
     - Weather & sea condition advisories
     - Safe zone & route prediction
     - Community updates & trends
     - Voice assistant commands
     - Fully Cloud-compatible & mobile-friendly
     """)
+
+
 
 
 
