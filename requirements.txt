@@ -1,8 +1,10 @@
-streamlit
-firebase-admin
-pandas
-requests
-streamlit-lottie
+streamlit>=1.27
+firebase-admin>=6.1
+pandas>=2.1
+requests>=2.32
+streamlit-lottie>=0.1.5
+
+
 
 
 
