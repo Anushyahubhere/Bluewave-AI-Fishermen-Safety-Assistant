@@ -4,4 +4,8 @@ streamlit-lottie
 streamlit-js-eval
 pandas
 requests
+pyttsx3
+SpeechRecognition
+
+
 
