@@ -91,7 +91,7 @@ body {background: linear-gradient(to bottom, #a0e9fd, #4aa0e6); color:#03396c;}
 # --- Sidebar Navigation with Icons ---
 menu_icons = {
     translations["login"][lang]:"",
-    translations["send_sos"][lang]:"🚨",
+    translations["send_sos"][lang]:"",
     translations["ai_prediction"][lang]:"🤖",
     translations["weather_advisory"][lang]:"🌤",
     translations["community_updates"][lang]:"💬",
@@ -258,6 +258,7 @@ elif menu_key == translations["about"][lang]:
     - Voice assistant commands
     - Fully Cloud-compatible & mobile-friendly
     """)
+
 
 
 
