@@ -191,7 +191,7 @@ elif menu == translations["real_time_location"][lang]:
                 "timestamp": datetime.utcnow()
             })
             st.success(translations["location_updated"][lang])
-        map_url = f"https://www.google.com/maps/embed/v1/view?key={st.secrets['AIzaSyDg-QehG3u_gjOAAhdusxaqO_MviEQ1kzw']}&center={lat},{lon}&zoom=10&maptype=satellite"
+       
         st.components.v1.iframe(map_url, height=500, width=800)
     else:
         st.warning(translations["login_required"][lang])
@@ -235,4 +235,5 @@ elif menu == translations["about"][lang]:
     - Voice assistant commands
     - Fully Cloud-compatible & mobile-friendly
     """)
+
 
