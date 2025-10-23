@@ -1,4 +1,4 @@
-# BlueWave AI - Fishermen Safety Assistant (Advanced Version)
+# BlueWave AI - Fishermen Safety Assistant (Advanced)
 import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app
 import firebase_admin
@@ -9,7 +9,6 @@ import requests
 from streamlit_lottie import st_lottie
 import pandas as pd
 from streamlit_js_eval import streamlit_js_eval
-import pyttsx3
 import speech_recognition as sr
 
 # Streamlit setup
@@ -31,11 +30,14 @@ def load_lottie_url(url):
     except:
         return None
 
-# Initialize text-to-speech engine
-engine = pyttsx3.init()
+# Browser-based Text-to-Speech
 def speak(text):
-    engine.say(text)
-    engine.runAndWait()
+    st.components.v1.html(f"""
+        <script>
+            var msg = new SpeechSynthesisUtterance("{text}");
+            window.speechSynthesis.speak(msg);
+        </script>
+        """, height=0)
 
 # Voice input
 def get_voice_command():
@@ -117,7 +119,6 @@ elif menu == "AI Prediction":
     uploaded_file = st.file_uploader("Upload JSON file", type=["json"])
     if uploaded_file:
         data = json.load(uploaded_file)
-        # Placeholder prediction
         score = 0.68
         st.success(f"🎯 Predicted Fish Availability Score: {score * 100:.1f}%")
         st.progress(int(score * 100))
@@ -211,11 +212,11 @@ elif menu == "Safe Zone Prediction":
         risk_score = wind * 0.4 + past_sos_count * 0.6
         if risk_score < 20:
             st.success("✅ Safe Zone")
-            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))  # Placeholder
+            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))
             speak("This zone is safe for fishing")
         else:
             st.error("⚠️ High Risk Zone")
-            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))  # Placeholder
+            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))
             speak("Warning! This zone is risky. Avoid fishing.")
 
 # --- VOICE ASSISTANT ---
@@ -294,5 +295,7 @@ elif menu == "About":
 
 Made with ❤️ by Team BlueWave for safe and smart fishing.
     """)
+
+
 
 
