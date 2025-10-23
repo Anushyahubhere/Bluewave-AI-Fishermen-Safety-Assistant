@@ -33,7 +33,6 @@ def load_lottie_url(url):
 
 # Initialize text-to-speech engine
 engine = pyttsx3.init()
-
 def speak(text):
     engine.say(text)
     engine.runAndWait()
@@ -97,7 +96,6 @@ elif menu == "Send SOS":
         msg = st.text_area("Describe the emergency")
         lat = st.text_input("Latitude (optional)")
         lon = st.text_input("Longitude (optional)")
-
         if st.button("Send SOS"):
             sos_id = str(uuid.uuid4())
             db.collection("sos_alerts").document(sos_id).set({
@@ -116,7 +114,6 @@ elif menu == "Send SOS":
 elif menu == "AI Prediction":
     st.subheader("🤖 AI Fish Catch Prediction")
     st.markdown("Upload data for fish catch prediction (e.g., temperature, salinity)")
-
     uploaded_file = st.file_uploader("Upload JSON file", type=["json"])
     if uploaded_file:
         data = json.load(uploaded_file)
@@ -130,7 +127,6 @@ elif menu == "AI Prediction":
 elif menu == "Weather Advisory":
     st.subheader("🌤 Sea Condition & Weather Advisory")
     place = st.text_input("Enter location (e.g., Chennai)")
-
     if st.button("Check Advisory"):
         try:
             url = f"https://wttr.in/{place}?format=j1"
@@ -139,11 +135,9 @@ elif menu == "Weather Advisory":
             temp = current["temp_C"]
             wind = current["windspeedKmph"]
             weather = current["weatherDesc"][0]["value"]
-
             st.metric("Temperature", f"{temp}°C")
             st.metric("Wind Speed", f"{wind} km/h")
             st.info(f"🌦️ Current Condition: {weather}")
-
             if float(wind) > 25:
                 st.error("⚠️ Sea condition unsafe! Avoid fishing now.")
                 speak("Warning! Sea conditions unsafe.")
@@ -158,7 +152,6 @@ elif menu == "Community Updates":
     st.subheader("💬 Fishermen Community Forum")
     if st.session_state.user:
         post = st.text_area("Share update / catch / info")
-
         if st.button("Post Update"):
             post_id = str(uuid.uuid4())
             db.collection("community_updates").document(post_id).set({
@@ -167,7 +160,6 @@ elif menu == "Community Updates":
                 "timestamp": datetime.utcnow()
             })
             st.success("✅ Post shared!")
-
         st.markdown("### 🌍 Recent Updates")
         updates = db.collection("community_updates").order_by(
             "timestamp", direction=firestore.Query.DESCENDING
@@ -193,7 +185,6 @@ elif menu == "Real-time Location":
             """,
             key="get_location"
         )
-
         if coords:
             lat, lon = coords
             st.success(f"✅ Latitude: {lat}, Longitude: {lon}")
@@ -210,23 +201,21 @@ elif menu == "Real-time Location":
     else:
         st.warning("Login to use location feature.")
 
-# --- SAFE ZONE PREDICTION (ADVANCED) ---
+# --- SAFE ZONE PREDICTION ---
 elif menu == "Safe Zone Prediction":
     st.subheader("🗺️ AI-Based Safe Zone Prediction")
     location = st.text_input("Enter your fishing location")
     wind = st.number_input("Current wind speed (km/h)")
     past_sos_count = st.number_input("Number of past SOS events in this area", value=0)
-
     if st.button("Predict Safe Zone"):
-        # Simple AI logic: higher wind + more SOS = danger
         risk_score = wind * 0.4 + past_sos_count * 0.6
         if risk_score < 20:
             st.success("✅ Safe Zone")
-            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))  # Placeholder location
+            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))  # Placeholder
             speak("This zone is safe for fishing")
         else:
             st.error("⚠️ High Risk Zone")
-            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))  # Placeholder location
+            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))  # Placeholder
             speak("Warning! This zone is risky. Avoid fishing.")
 
 # --- VOICE ASSISTANT ---
@@ -249,37 +238,61 @@ elif menu == "Voice Assistant":
 # --- FISHING TRENDS DASHBOARD ---
 elif menu == "Fishing Trends":
     st.subheader("📈 Fishing Trends Dashboard")
-    
     sos_data = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).stream()
     community_data = db.collection("community_updates").order_by("timestamp", direction=firestore.Query.DESCENDING).stream()
-    
-    sos_list = [
-        {"username": d.to_dict().get("username","Unknown"), "timestamp": d.to_dict().get("timestamp","")} 
-        for d in sos_data
-    ]
-    community_list = [
-        {"username": d.to_dict().get("username","Unknown"), "timestamp": d.to_dict().get("timestamp","")} 
-        for d in community_data
-    ]
-    
+    sos_list = [{"username": d.to_dict().get("username","Unknown"), "timestamp": d.to_dict().get("timestamp","")} for d in sos_data]
+    community_list = [{"username": d.to_dict().get("username","Unknown"), "timestamp": d.to_dict().get("timestamp","")} for d in community_data]
     df_sos = pd.DataFrame(sos_list)
     df_comm = pd.DataFrame(community_list)
-    
     st.markdown("### Recent SOS Events")
-    if not df_sos.empty:
-        st.dataframe(df_sos)
-    else:
-        st.info("No SOS events found.")
-    
+    st.dataframe(df_sos if not df_sos.empty else pd.DataFrame({"Info":["No SOS events"]}))
     st.markdown("### Recent Community Activity")
-    if not df_comm.empty:
-        st.dataframe(df_comm)
-    else:
-        st.info("No community updates found.")
+    st.dataframe(df_comm if not df_comm.empty else pd.DataFrame({"Info":["No updates"]}))
 
 # --- SAFE ROUTE SUGGESTION ---
 elif menu == "Safe Routes":
     st.subheader("🗺️ Safe Route Suggestion")
     location = st.text_input("Enter your current fishing location")
-    wind = st.number_input("Enter approximate wind speed (
+    wind = st.number_input("Enter approximate wind speed (km/h)")
+    if st.button("Suggest Safe Areas"):
+        if wind > 25:
+            st.error("⚠️ Avoid offshore areas, stay near safe harbors!")
+        else:
+            st.success("✅ Safe to sail in open sea zones. Use caution.")
+
+# --- ALERTS ---
+elif menu == "Alerts":
+    st.subheader("📢 Recent SOS Alerts")
+    alerts = db.collection("sos_alerts").order_by(
+        "timestamp", direction=firestore.Query.DESCENDING
+    ).limit(10)
+    for doc in alerts.stream():
+        data = doc.to_dict()
+        st.warning(
+            f"🚨 **{data.get('username','Unknown')}** reported: {data.get('message','')}\n"
+            f"📍 Location: {data.get('latitude','N/A')}, {data.get('longitude','N/A')}\n"
+            f"🕒 {data.get('timestamp','')}"
+        )
+
+# --- ABOUT ---
+elif menu == "About":
+    st.subheader("🌊 About BlueWave AI")
+    st_lottie(load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_zrqthn6o.json"), height=200)
+    st.markdown("""
+    **BlueWave AI** is an innovative safety assistant for fishermen powered by AI & cloud.
+
+    ### 🌟 Features:
+    - 🚨 SOS Emergency Alerts  
+    - 🤖 AI Fish Catch Prediction  
+    - 🌤 Weather & Sea Advisory  
+    - 💬 Fishermen Community Forum  
+    - 📍 Real-time Location Tracking  
+    - 📈 Fishing Trends Dashboard  
+    - 🗺️ Safe Zone Prediction  
+    - 🎤 Voice Assistant  
+    - 🕒 Alerts System  
+
+Made with ❤️ by Team BlueWave for safe and smart fishing.
+    """)
+
 
