@@ -1,3 +1,7 @@
 streamlit
 firebase-admin
 streamlit-lottie
+streamlit-js-eval
+pandas
+requests
+
