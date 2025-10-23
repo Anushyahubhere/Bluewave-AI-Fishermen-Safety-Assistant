@@ -3,6 +3,10 @@ firebase-admin
 pandas
 requests
 streamlit-lottie
+folium
+streamlit-folium
+
+
 
 
 
