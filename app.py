@@ -1,4 +1,4 @@
-# BlueWave AI - Fishermen Safety Assistant (Cloud-Compatible)
+# BlueWave AI - Fishermen Safety Assistant (Advanced & Cloud Compatible)
 import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app
 import firebase_admin
@@ -10,17 +10,17 @@ from streamlit_lottie import st_lottie
 import pandas as pd
 from streamlit_js_eval import streamlit_js_eval
 
-# Streamlit setup
+# --- Streamlit Setup ---
 st.set_page_config(page_title="BlueWave AI", layout="wide")
 st.title("🌊 BlueWave AI - Fishermen Safety Assistant (Cloud Compatible)")
 
-# Firebase setup
+# --- Firebase Setup ---
 if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["firebase"]))
     initialize_app(cred)
 db = firestore.client()
 
-# Lottie loader
+# --- Lottie Loader ---
 def load_lottie_url(url):
     try:
         r = requests.get(url)
@@ -29,7 +29,7 @@ def load_lottie_url(url):
     except:
         return None
 
-# Browser-based Text-to-Speech
+# --- Browser TTS ---
 def speak(text):
     st.components.v1.html(f"""
         <script>
@@ -38,7 +38,7 @@ def speak(text):
         </script>
         """, height=0)
 
-# Browser-safe voice input (text input simulation)
+# --- Browser-safe voice input ---
 def get_browser_voice_command():
     st.info("🎤 Enter your command here (simulate voice input)")
     command = st.text_input("Voice Command (type what you would speak)")
@@ -106,14 +106,65 @@ elif menu == "Send SOS":
 # --- AI PREDICTION ---
 elif menu == "AI Prediction":
     st.subheader("🤖 AI Fish Catch Prediction")
-    st.markdown("Upload data for fish catch prediction (e.g., temperature, salinity)")
+    st.markdown("Upload environmental data (JSON) or enter manually:")
+
+    # Default values
+    default_data = {
+        "water_temp": 28,
+        "salinity": 35,
+        "ph": 7.5,
+        "wind_speed": 10,
+        "tide": 1.5,
+        "time_of_day": "morning"
+    }
+
     uploaded_file = st.file_uploader("Upload JSON file", type=["json"])
     if uploaded_file:
-        data = json.load(uploaded_file)
-        score = 0.68
-        st.success(f"🎯 Predicted Fish Availability Score: {score * 100:.1f}%")
-        st.progress(int(score * 100))
-        st.caption("This is an experimental AI-based estimate.")
+        try:
+            json_data = json.load(uploaded_file)
+            for key in default_data:
+                if key in json_data:
+                    default_data[key] = json_data[key]
+            st.success("✅ JSON loaded successfully!")
+        except:
+            st.error("⚠️ Invalid JSON file")
+
+    # Manual input fields
+    water_temp = st.number_input("Water Temperature (°C)", value=float(default_data["water_temp"]))
+    salinity = st.number_input("Salinity (ppt)", value=float(default_data["salinity"]))
+    ph = st.number_input("pH Level", value=float(default_data["ph"]))
+    wind_speed = st.number_input("Wind Speed (km/h)", value=float(default_data["wind_speed"]))
+    tide = st.number_input("Tide Level (m)", value=float(default_data["tide"]))
+    time_of_day = st.selectbox("Time of Day", ["morning", "afternoon", "evening"], index=["morning","afternoon","evening"].index(default_data["time_of_day"]))
+
+    # Calculate weighted score
+    time_factor = {"morning":0.3, "afternoon":0.2, "evening":0.1}[time_of_day]
+    score = (
+        0.3 * (1 - abs(water_temp - 28)/10) +
+        0.2 * (1 - abs(salinity - 35)/10) +
+        0.2 * (1 - abs(ph - 7.5)/2) +
+        0.1 * (1 - wind_speed/50) +
+        0.1 * (1 - abs(tide - 1.5)/2) +
+        0.1 * time_factor
+    )
+    score = max(0, min(1, score))
+    st.success(f"🎯 Predicted Fish Availability Score: {score*100:.1f}%")
+    st.progress(int(score*100))
+
+    # Contribution chart
+    contributions = {
+        "Temperature": 0.3 * (1 - abs(water_temp - 28)/10),
+        "Salinity": 0.2 * (1 - abs(salinity - 35)/10),
+        "pH": 0.2 * (1 - abs(ph - 7.5)/2),
+        "Wind": 0.1 * (1 - wind_speed/50),
+        "Tide": 0.1 * (1 - abs(tide - 1.5)/2),
+        "Time of Day": 0.1 * time_factor
+    }
+    df_contrib = pd.DataFrame(list(contributions.items()), columns=["Factor", "Contribution"])
+    st.bar_chart(df_contrib.set_index("Factor"))
+
+    # Browser TTS
+    speak(f"Predicted fish availability score is {score*100:.0f} percent")
 
 # --- WEATHER ADVISORY ---
 elif menu == "Weather Advisory":
@@ -217,77 +268,8 @@ elif menu == "Voice Assistant":
         command = get_browser_voice_command()
         if command:
             if "sos" in command:
-                st.session_state.command = "SOS"
-                st.success("Voice command recognized: Send SOS")
-                speak("Command recognized: Send SOS")
-            elif "safe" in command:
-                st.session_state.command = "SAFE_ZONE"
-                st.success("Voice command recognized: Show Safe Zone")
-                speak("Command recognized: Show Safe Zone")
-            else:
-                st.warning("Command not recognized.")
-    else:
-        st.warning("Login to use voice assistant.")
+                st.session_state.command =
 
-# --- FISHING TRENDS DASHBOARD ---
-elif menu == "Fishing Trends":
-    st.subheader("📈 Fishing Trends Dashboard")
-    sos_data = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).stream()
-    community_data = db.collection("community_updates").order_by("timestamp", direction=firestore.Query.DESCENDING).stream()
-    sos_list = [{"username": d.to_dict().get("username","Unknown"), "timestamp": d.to_dict().get("timestamp","")} for d in sos_data]
-    community_list = [{"username": d.to_dict().get("username","Unknown"), "timestamp": d.to_dict().get("timestamp","")} for d in community_data]
-    df_sos = pd.DataFrame(sos_list)
-    df_comm = pd.DataFrame(community_list)
-    st.markdown("### Recent SOS Events")
-    st.dataframe(df_sos if not df_sos.empty else pd.DataFrame({"Info":["No SOS events"]}))
-    st.markdown("### Recent Community Activity")
-    st.dataframe(df_comm if not df_comm.empty else pd.DataFrame({"Info":["No updates"]}))
-
-# --- SAFE ROUTE SUGGESTION ---
-elif menu == "Safe Routes":
-    st.subheader("🗺️ Safe Route Suggestion")
-    location = st.text_input("Enter your current fishing location")
-    wind = st.number_input("Enter approximate wind speed (km/h)")
-    if st.button("Suggest Safe Areas"):
-        if wind > 25:
-            st.error("⚠️ Avoid offshore areas, stay near safe harbors!")
-        else:
-            st.success("✅ Safe to sail in open sea zones. Use caution.")
-
-# --- ALERTS ---
-elif menu == "Alerts":
-    st.subheader("📢 Recent SOS Alerts")
-    alerts = db.collection("sos_alerts").order_by(
-        "timestamp", direction=firestore.Query.DESCENDING
-    ).limit(10)
-    for doc in alerts.stream():
-        data = doc.to_dict()
-        st.warning(
-            f"🚨 **{data.get('username','Unknown')}** reported: {data.get('message','')}\n"
-            f"📍 Location: {data.get('latitude','N/A')}, {data.get('longitude','N/A')}\n"
-            f"🕒 {data.get('timestamp','')}"
-        )
-
-# --- ABOUT ---
-elif menu == "About":
-    st.subheader("🌊 About BlueWave AI")
-    st_lottie(load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_zrqthn6o.json"), height=200)
-    st.markdown("""
-    **BlueWave AI** is an innovative safety assistant for fishermen powered by AI & cloud.
-
-    ### 🌟 Features:
-    - 🚨 SOS Emergency Alerts  
-    - 🤖 AI Fish Catch Prediction  
-    - 🌤 Weather & Sea Advisory  
-    - 💬 Fishermen Community Forum  
-    - 📍 Real-time Location Tracking  
-    - 📈 Fishing Trends Dashboard  
-    - 🗺️ Safe Zone Prediction  
-    - 🎤 Voice Assistant  
-    - 🕒 Alerts System  
-
-Made with ❤️ by Team BlueWave for safe and smart fishing.
-    """)
 
 
 
