@@ -1,4 +1,4 @@
-# BlueWave AI - Fishermen Safety Assistant (Final Cloud Compatible)
+# BlueWave AI - Fishermen Safety Assistant (Cloud Compatible)
 import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app
 import firebase_admin
@@ -8,7 +8,6 @@ import json
 import requests
 import pandas as pd
 from streamlit_lottie import st_lottie
-from streamlit_js_eval import streamlit_js_eval
 
 # --- Streamlit Setup ---
 st.set_page_config(page_title="BlueWave AI", layout="wide")
@@ -108,7 +107,6 @@ elif menu == "AI Prediction":
     st.subheader("🤖 AI Fish Catch Prediction")
     st.markdown("Upload environmental data (JSON) or enter manually:")
 
-    # Default values
     default_data = {
         "water_temp": 28,
         "salinity": 35,
@@ -129,7 +127,6 @@ elif menu == "AI Prediction":
         except:
             st.error("⚠️ Invalid JSON file")
 
-    # Manual input fields
     water_temp = st.number_input("Water Temperature (°C)", value=float(default_data["water_temp"]))
     salinity = st.number_input("Salinity (ppt)", value=float(default_data["salinity"]))
     ph = st.number_input("pH Level", value=float(default_data["ph"]))
@@ -137,7 +134,6 @@ elif menu == "AI Prediction":
     tide = st.number_input("Tide Level (m)", value=float(default_data["tide"]))
     time_of_day = st.selectbox("Time of Day", ["morning", "afternoon", "evening"], index=["morning","afternoon","evening"].index(default_data["time_of_day"]))
 
-    # Calculate weighted score
     time_factor = {"morning":0.3, "afternoon":0.2, "evening":0.1}[time_of_day]
     score = (
         0.3 * (1 - abs(water_temp - 28)/10) +
@@ -151,7 +147,6 @@ elif menu == "AI Prediction":
     st.success(f"🎯 Predicted Fish Availability Score: {score*100:.1f}%")
     st.progress(int(score*100))
 
-    # Contribution chart
     contributions = {
         "Temperature": 0.3 * (1 - abs(water_temp - 28)/10),
         "Salinity": 0.2 * (1 - abs(salinity - 35)/10),
@@ -163,7 +158,6 @@ elif menu == "AI Prediction":
     df_contrib = pd.DataFrame(list(contributions.items()), columns=["Factor", "Contribution"])
     st.bar_chart(df_contrib.set_index("Factor"))
 
-    # Save prediction to Firestore
     if st.session_state.user:
         db.collection("ai_predictions").add({
             "username": st.session_state.user,
@@ -224,30 +218,21 @@ elif menu == "Community Updates":
 elif menu == "Real-time Location":
     st.subheader("📍 Real-time Location Tracker")
     if st.session_state.user:
-        coords = streamlit_js_eval(
-            js_expressions="""
-            new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => resolve([pos.coords.latitude, pos.coords.longitude]),
-                    (err) => resolve(null)
-                );
-            });
-            """,
-            key="get_location"
+        coords_html = """
+        <script>
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                const coords = [pos.coords.latitude, pos.coords.longitude];
+                const el = document.createElement('div');
+                el.id='coords';
+                el.innerText = JSON.stringify(coords);
+                document.body.appendChild(el);
+            }
         )
-        if coords:
-            lat, lon = coords
-            st.success(f"✅ Latitude: {lat}, Longitude: {lon}")
-            if st.button("Update Location in System"):
-                db.collection("locations").document(st.session_state.user).set({
-                    "username": st.session_state.user,
-                    "latitude": lat,
-                    "longitude": lon,
-                    "timestamp": datetime.utcnow()
-                })
-                st.success("📍 Location updated successfully!")
-        else:
-            st.info("Allow browser to access your location.")
+        </script>
+        """
+        st.components.v1.html(coords_html, height=0)
+        st.info("Allow browser to share location and refresh the page to capture coordinates.")
     else:
         st.warning("Login to use location feature.")
 
@@ -276,7 +261,6 @@ elif menu == "Voice Assistant":
         if command:
             st.session_state.command = command
             st.success(f"Voice command recognized: {command}")
-            
             if "sos" in command:
                 st.info("Triggering SOS alert flow...")
             elif "safe" in command:
@@ -285,7 +269,6 @@ elif menu == "Voice Assistant":
                 st.info("Opening AI Fish Catch Prediction...")
             else:
                 st.warning("Command not recognized")
-            
             speak(f"Command received: {command}")
     else:
         st.warning("Please log in to use the voice assistant.")
@@ -322,46 +305,42 @@ elif menu == "Safe Routes":
         max_wind = st.number_input("Maximum Safe Wind (km/h)", value=25)
         if st.button("Generate Safe Route"):
             risk_zones_ref = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10)
-            risk_points = []
-            for doc in risk_zones_ref.stream():
-                d = doc.to_dict()
-                if d.get("latitude") and d.get("longitude"):
-                    risk_points.append([float(d["latitude"]), float(d["longitude"])])
-            route_df = pd.DataFrame([{"lat": start_lat, "lon": start_lon}, {"lat": end_lat, "lon": end_lon}])
-            st.map(route_df)
-            if risk_points:
-                st.warning(f"⚠️ {len(risk_points)} risky zones detected along route. Avoid them!")
-            else:
-                st.success("✅ Route appears safe.")
+            risk_coords = [(d.to_dict()["latitude"], d.to_dict()["longitude"]) for d in risk_zones_ref.stream()]
+            st.map(pd.DataFrame({
+                "lat": [start_lat, end_lat] + [float(lat) for lat, lon in risk_coords if lat],
+                "lon": [start_lon, end_lon] + [float(lon) for lat, lon in risk_coords if lon]
+            }))
+            st.success("✅ Safe route displayed with alerts overlay")
     else:
         st.warning("Login to plan safe routes.")
 
 # --- ALERTS ---
 elif menu == "Alerts":
-    st.subheader("📢 Nearby Alerts")
+    st.subheader("📢 Recent SOS Alerts")
     if st.session_state.user:
         sos_ref = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10)
         for doc in sos_ref.stream():
-            data = doc.to_dict()
-            st.info(f"🚨 {data.get('username','Unknown')} at ({data.get('latitude','N/A')}, {data.get('longitude','N/A')}): {data.get('message','No message')}")
+            d = doc.to_dict()
+            st.info(f"{d.get('username','Unknown')} at ({d.get('latitude','N/A')}, {d.get('longitude','N/A')}): {d.get('message','No message')}")
     else:
-        st.warning("Please login to view alerts.")
+        st.warning("Login to view alerts.")
 
 # --- ABOUT ---
 elif menu == "About":
     st.subheader("🌊 About BlueWave AI")
     st_lottie(load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_zrqthn6o.json"), height=200)
     st.markdown("""
-    BlueWave AI is an assistant platform to enhance safety and success of fishermen using:
-    - Real-time tracking
-    - SOS emergency response
-    - AI-based fish detection
-    - Safe Zone prediction
-    - Voice assistant (cloud-friendly)
-    - Fishing Trends & Safe Routes
-    - Multilingual support (coming soon)
-    - Offline/mobile compatibility (coming soon)
+    BlueWave AI is an advanced assistant platform for fishermen:
+    - Send & receive SOS alerts
+    - AI-based fish catch prediction
+    - Real-time location tracking (browser-based)
+    - Weather & sea condition advisories
+    - Safe zone & route prediction
+    - Community updates & trends
+    - Voice assistant commands
+    - Fully Cloud-compatible & mobile-friendly
     """)
+
 
 
 
