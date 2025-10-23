@@ -1,4 +1,4 @@
-# BlueWave AI - Fishermen Safety Assistant (Advanced Multilingual Dashboard)
+# BlueWave AI - Fishermen Safety Assistant (Full Advanced + Multilingual)
 import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app
 import firebase_admin
@@ -70,43 +70,30 @@ def speak(text):
         </script>
         """, height=0)
 
-# --- Voice Input ---
+# --- Browser Voice Input ---
 def get_browser_voice_command():
     st.info("🎤 Enter your command here (simulate voice input)")
     command = st.text_input(translations["voice_assistant"][lang])
     return command.lower() if command else ""
 
-# --- Maritime CSS ---
-st.markdown("""
-<style>
-body {background: linear-gradient(to bottom, #a0e9fd, #4aa0e6); color:#03396c;}
-.card {background-color: rgba(255,255,255,0.9); padding:20px; border-radius:15px; box-shadow:0 8px 20px rgba(0,0,0,0.2); margin-bottom:20px;}
-.stats-card {background-color: rgba(255,255,255,0.95); padding:15px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.2); text-align:center; font-weight:bold;}
-.alert-ticker {background-color:#ffd700; padding:10px; border-radius:10px; font-weight:bold; overflow:hidden;}
-.alert-marquee {display:inline-block; white-space:nowrap; animation:scroll-left 20s linear infinite;}
-@keyframes scroll-left {0% {transform: translateX(100%);} 100% {transform: translateX(-100%);}}
-</style>
-""", unsafe_allow_html=True)
-
-# --- Sidebar Navigation with Icons ---
-menu_icons = {
-    translations["login"][lang]:"",
-    translations["send_sos"][lang]:"",
-    translations["ai_prediction"][lang]:"🤖",
-    translations["weather_advisory"][lang]:"🌤",
-    translations["community_updates"][lang]:"💬",
-    "📍 Real-time Location":"",
-    translations["safe_zone_prediction"][lang]:"🗺️",
-    translations["voice_assistant"][lang]:"🎤",
-    translations["fishing_trends"][lang]:"📈",
-    translations["safe_routes"][lang]:"🛟",
-    translations["alerts"][lang]:"",
-    translations["about"][lang]:"ℹ️"
-}
-menu_labels = [f"{menu_icons[m]} {m}" for m in menu_icons.keys()]
-menu = st.sidebar.radio(translations["title"][lang], menu_labels)
-menu_key = {f"{menu_icons[k]} {k}":k for k in menu_icons.keys()}[menu]
-
+# --- Sidebar Navigation ---
+menu = st.sidebar.radio(
+    translations["title"][lang],
+    [
+        translations["login"][lang],
+        translations["send_sos"][lang],
+        translations["ai_prediction"][lang],
+        translations["weather_advisory"][lang],
+        translations["community_updates"][lang],
+        "📍 Real-time Location",
+        translations["safe_zone_prediction"][lang],
+        translations["voice_assistant"][lang],
+        translations["fishing_trends"][lang],
+        translations["safe_routes"][lang],
+        translations["alerts"][lang],
+        translations["about"][lang]
+    ]
+)
 st.sidebar.markdown("---")
 st.sidebar.markdown("Made with ❤️ for Fishermen")
 
@@ -114,23 +101,8 @@ st.sidebar.markdown("Made with ❤️ for Fishermen")
 if "user" not in st.session_state:
     st.session_state.user = None
 
-# --- Dashboard Stats Cards ---
-if st.session_state.user:
-    col1, col2, col3, col4 = st.columns(4)
-    with col1: st.markdown('<div class="stats-card">🚨 SOS Alerts<br>10</div>', unsafe_allow_html=True)
-    with col2: st.markdown('<div class="stats-card">👤 Active Users<br>25</div>', unsafe_allow_html=True)
-    with col3: st.markdown('<div class="stats-card">🗺️ Safe Zones<br>5</div>', unsafe_allow_html=True)
-    with col4: st.markdown('<div class="stats-card">🐟 Avg Fish Score<br>75%</div>', unsafe_allow_html=True)
-
-# --- Real-time Alerts Ticker ---
-sos_ref = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10)
-alerts_text = " | ".join([f"{doc.to_dict().get('username','Unknown')}: {doc.to_dict().get('message','')}" for doc in sos_ref.stream()])
-if alerts_text:
-    st.markdown(f'<div class="alert-ticker"><div class="alert-marquee">{alerts_text}</div></div>', unsafe_allow_html=True)
-
-# --- Main App Logic ---
-# LOGIN
-if menu_key == translations["login"][lang]:
+# --- LOGIN ---
+if menu == translations["login"][lang]:
     st.subheader(translations["login"][lang])
     username = st.text_input(translations["username"][lang])
     password = st.text_input(translations["password"][lang], type="password")
@@ -142,8 +114,8 @@ if menu_key == translations["login"][lang]:
         else:
             st.error(translations["login_error"][lang])
 
-# SEND SOS
-elif menu_key == translations["send_sos"][lang]:
+# --- SEND SOS ---
+elif menu == translations["send_sos"][lang]:
     st.subheader(translations["send_sos"][lang])
     if st.session_state.user:
         msg = st.text_area(translations["sos_message"][lang])
@@ -163,8 +135,8 @@ elif menu_key == translations["send_sos"][lang]:
     else:
         st.warning(translations["login_required"][lang])
 
-# ALERTS
-elif menu_key == translations["alerts"][lang]:
+# --- ALERTS ---
+elif menu == translations["alerts"][lang]:
     st.subheader(translations["alerts"][lang])
     if st.session_state.user:
         sos_ref = db.collection("sos_alerts").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10)
@@ -174,8 +146,8 @@ elif menu_key == translations["alerts"][lang]:
     else:
         st.warning(translations["login_required"][lang])
 
-# AI Prediction
-elif menu_key == translations["ai_prediction"][lang]:
+# --- AI Prediction ---
+elif menu == translations["ai_prediction"][lang]:
     st.subheader(translations["ai_prediction"][lang])
     st.markdown(translations["upload_json"][lang])
     uploaded_file = st.file_uploader(translations["upload_json"][lang])
@@ -185,23 +157,23 @@ elif menu_key == translations["ai_prediction"][lang]:
         st.success(f"Predicted Fish Availability Score: {score*100:.1f}%")
         speak(f"Predicted Fish Availability Score {score*100:.1f} percent")
 
-# Weather
-elif menu_key == translations["weather_advisory"][lang]:
+# --- Weather Advisory ---
+elif menu == translations["weather_advisory"][lang]:
     st.subheader(translations["weather_advisory"][lang])
     lat = st.number_input(translations["latitude"][lang], value=8.5)
     lon = st.number_input(translations["longitude"][lang], value=78.1)
     st.info(f"Weather advisory for ({lat},{lon})")
 
-# Community Updates
-elif menu_key == translations["community_updates"][lang]:
+# --- Community Updates ---
+elif menu == translations["community_updates"][lang]:
     st.subheader(translations["community_updates"][lang])
     updates_ref = db.collection("community_updates").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(5)
     for doc in updates_ref.stream():
         d = doc.to_dict()
         st.write(f"{d.get('username','Unknown')} : {d.get('message','No message')}")
 
-# Real-time Location
-elif menu_key == "📍 Real-time Location":
+# --- Real-time Location ---
+elif menu == "📍 Real-time Location":
     st.subheader("📍 Real-time Location Tracker")
     if st.session_state.user:
         lat = st.number_input(translations["latitude"][lang], value=8.5, key="loc_lat")
@@ -219,32 +191,32 @@ elif menu_key == "📍 Real-time Location":
     else:
         st.warning(translations["login_required"][lang])
 
-# Safe Zone Prediction
-elif menu_key == translations["safe_zone_prediction"][lang]:
+# --- Safe Zone Prediction ---
+elif menu == translations["safe_zone_prediction"][lang]:
     st.subheader(translations["safe_zone_prediction"][lang])
     st.info("Safe zones based on recent SOS and weather data")
 
-# Safe Routes
-elif menu_key == translations["safe_routes"][lang]:
+# --- Safe Routes ---
+elif menu == translations["safe_routes"][lang]:
     st.subheader(translations["safe_routes"][lang])
     st.info("Safe routes between port and fishing zones")
 
-# Fishing Trends
-elif menu_key == translations["fishing_trends"][lang]:
+# --- Fishing Trends ---
+elif menu == translations["fishing_trends"][lang]:
     st.subheader(translations["fishing_trends"][lang])
     df = pd.DataFrame({"Day":["Mon","Tue","Wed","Thu","Fri"],"Catch Score":[0.7,0.8,0.6,0.9,0.75]})
     st.line_chart(df.set_index("Day")["Catch Score"])
 
-# Voice Assistant
-elif menu_key == translations["voice_assistant"][lang]:
+# --- Voice Assistant ---
+elif menu == translations["voice_assistant"][lang]:
     st.subheader(translations["voice_assistant"][lang])
     command = get_browser_voice_command()
     if command:
         st.info(f"Command received: {command}")
         speak(f"You said: {command}")
 
-# ABOUT
-elif menu_key == translations["about"][lang]:
+# --- ABOUT ---
+elif menu == translations["about"][lang]:
     st.subheader(translations["about"][lang])
     st_lottie(load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_zrqthn6o.json"), height=200)
     st.markdown("""
@@ -258,19 +230,3 @@ elif menu_key == translations["about"][lang]:
     - Voice assistant commands
     - Fully Cloud-compatible & mobile-friendly
     """)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
