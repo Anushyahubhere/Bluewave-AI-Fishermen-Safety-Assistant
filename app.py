@@ -1,4 +1,4 @@
-# BlueWave AI - Fishermen Safety Assistant (Advanced)
+# BlueWave AI - Fishermen Safety Assistant (Cloud-Compatible)
 import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app
 import firebase_admin
@@ -9,11 +9,10 @@ import requests
 from streamlit_lottie import st_lottie
 import pandas as pd
 from streamlit_js_eval import streamlit_js_eval
-import speech_recognition as sr
 
 # Streamlit setup
 st.set_page_config(page_title="BlueWave AI", layout="wide")
-st.title("🌊 BlueWave AI - Fishermen Safety Assistant (Advanced)")
+st.title("🌊 BlueWave AI - Fishermen Safety Assistant (Cloud Compatible)")
 
 # Firebase setup
 if not firebase_admin._apps:
@@ -39,19 +38,11 @@ def speak(text):
         </script>
         """, height=0)
 
-# Voice input
-def get_voice_command():
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("🎤 Listening for command...")
-        audio = r.listen(source, timeout=5, phrase_time_limit=5)
-    try:
-        command = r.recognize_google(audio)
-        st.success(f"🗣 You said: {command}")
-        return command.lower()
-    except:
-        st.error("❌ Could not recognize voice.")
-        return ""
+# Browser-safe voice input (text input simulation)
+def get_browser_voice_command():
+    st.info("🎤 Enter your command here (simulate voice input)")
+    command = st.text_input("Voice Command (type what you would speak)")
+    return command.lower() if command else ""
 
 # --- Sidebar Navigation ---
 menu = st.sidebar.radio(
@@ -223,16 +214,18 @@ elif menu == "Safe Zone Prediction":
 elif menu == "Voice Assistant":
     st.subheader("🎤 Voice Assistant")
     if st.session_state.user:
-        st.info("You can say commands like 'send SOS' or 'show safe zones'.")
-        command = get_voice_command()
-        if "sos" in command:
-            st.session_state.command = "SOS"
-            st.success("Voice command recognized: Send SOS")
-        elif "safe" in command:
-            st.session_state.command = "SAFE_ZONE"
-            st.success("Voice command recognized: Show Safe Zone")
-        else:
-            st.warning("Command not recognized.")
+        command = get_browser_voice_command()
+        if command:
+            if "sos" in command:
+                st.session_state.command = "SOS"
+                st.success("Voice command recognized: Send SOS")
+                speak("Command recognized: Send SOS")
+            elif "safe" in command:
+                st.session_state.command = "SAFE_ZONE"
+                st.success("Voice command recognized: Show Safe Zone")
+                speak("Command recognized: Show Safe Zone")
+            else:
+                st.warning("Command not recognized.")
     else:
         st.warning("Login to use voice assistant.")
 
@@ -295,6 +288,7 @@ elif menu == "About":
 
 Made with ❤️ by Team BlueWave for safe and smart fishing.
     """)
+
 
 
 
