@@ -1,14 +1,11 @@
-# BlueWave AI - Fishermen Safety Assistant (Full Advanced + Multilingual, No Google API)
-
+# BlueWave AI - Fishermen Safety Assistant (Full Advanced + Multilingual + Folium Maps)
 import streamlit as st
-import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
-from datetime import datetime
+import firebase_admin
+from datetime import datetime, timedelta
 import uuid
 import json
 import pandas as pd
-import requests
-from streamlit_lottie import st_lottie
 import folium
 from streamlit_folium import st_folium
 
@@ -21,7 +18,7 @@ lang = st.sidebar.selectbox(
     ["English", "Hindi", "Tamil", "Telugu"]
 )
 
-# --- Translations ---
+# --- Translations Dictionary ---
 translations = {
     "title": {
         "English":"🌊 BlueWave AI - Fishermen Safety Assistant",
@@ -167,12 +164,6 @@ translations = {
         "Tamil":"குரல் உதவியாளர்",
         "Telugu":"వాయిస్ అసిస్టెంట్"
     },
-    "real_time_location": {
-        "English":"📍 Real-time Location",
-        "Hindi":"📍 वास्तविक समय स्थान",
-        "Tamil":"📍 நேரடி இடம்",
-        "Telugu":"📍 రియల్-టైమ్ లొకేషన్"
-    }
 }
 
 # --- Firebase Setup ---
@@ -180,30 +171,6 @@ if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["firebase"]))
     initialize_app(cred)
 db = firestore.client()
-
-# --- Lottie Loader ---
-def load_lottie_url(url):
-    try:
-        r = requests.get(url)
-        if r.status_code == 200:
-            return r.json()
-    except:
-        return None
-
-# --- Browser TTS ---
-def speak(text):
-    st.components.v1.html(f"""
-        <script>
-            var msg = new SpeechSynthesisUtterance("{text}");
-            window.speechSynthesis.speak(msg);
-        </script>
-        """, height=0)
-
-# --- Browser Voice Input ---
-def get_browser_voice_command():
-    st.info("🎤 Enter your command here (simulate voice input)")
-    command = st.text_input(translations["voice_assistant"][lang])
-    return command.lower() if command else ""
 
 # --- Sidebar Navigation ---
 menu = st.sidebar.radio(
@@ -214,7 +181,7 @@ menu = st.sidebar.radio(
         translations["ai_prediction"][lang],
         translations["weather_advisory"][lang],
         translations["community_updates"][lang],
-        translations["real_time_location"][lang],
+        translations["real_time_location"] if "real_time_location" in translations else "📍 Real-time Location",
         translations["safe_zone_prediction"][lang],
         translations["voice_assistant"][lang],
         translations["fishing_trends"][lang],
@@ -260,7 +227,6 @@ elif menu == translations["send_sos"][lang]:
                 "timestamp": datetime.utcnow()
             })
             st.success(translations["sos_sent"][lang])
-            speak(translations["sos_sent"][lang])
     else:
         st.warning(translations["login_required"][lang])
 
@@ -283,7 +249,6 @@ elif menu == translations["ai_prediction"][lang]:
         data = json.load(uploaded_file)
         score = 0.7
         st.success(f"Predicted Fish Availability Score: {score*100:.1f}%")
-        speak(f"Predicted Fish Availability Score {score*100:.1f} percent")
 
 # --- Weather Advisory ---
 elif menu == translations["weather_advisory"][lang]:
@@ -300,9 +265,9 @@ elif menu == translations["community_updates"][lang]:
         d = doc.to_dict()
         st.write(f"{d.get('username','Unknown')} : {d.get('message','No message')}")
 
-# --- Real-time Location using OpenStreetMap ---
-elif menu == translations["real_time_location"][lang]:
-    st.subheader(translations["real_time_location"][lang])
+# --- Real-time Location ---
+elif menu == "📍 Real-time Location":
+    st.subheader("📍 Real-time Location Tracker")
     if st.session_state.user:
         lat = st.number_input(translations["latitude"][lang], value=8.5, key="loc_lat")
         lon = st.number_input(translations["longitude"][lang], value=78.1, key="loc_lon")
@@ -314,23 +279,77 @@ elif menu == translations["real_time_location"][lang]:
                 "timestamp": datetime.utcnow()
             })
             st.success(translations["location_updated"][lang])
-
-        # Folium map
         m = folium.Map(location=[lat, lon], zoom_start=10)
-        folium.Marker([lat, lon], tooltip=st.session_state.user).add_to(m)
-        st_folium(m, width=800, height=500)
+        folium.Marker([lat, lon], tooltip="You are here").add_to(m)
+        st_folium(m, width=700, height=500)
     else:
         st.warning(translations["login_required"][lang])
 
 # --- Safe Zone Prediction ---
 elif menu == translations["safe_zone_prediction"][lang]:
     st.subheader(translations["safe_zone_prediction"][lang])
-    st.info("Safe zones based on recent SOS and weather data")
+    
+    recent_sos = db.collection("sos_alerts").where(
+        "timestamp", ">=", datetime.utcnow() - timedelta(hours=24)
+    ).stream()
+    
+    danger_points = []
+    for doc in recent_sos:
+        d = doc.to_dict()
+        try:
+            danger_points.append([float(d.get("latitude",0)), float(d.get("longitude",0))])
+        except:
+            continue
+    
+    m_zone = folium.Map(location=[8.5,78.1], zoom_start=10)
+    
+    grid_points = [
+        [(8.6,78.0),(8.6,78.2),(8.4,78.2),(8.4,78.0)]
+    ]
+    
+    for zone in grid_points:
+        in_danger = any(
+            zone[2][0] <= p[0] <= zone[0][0] and zone[0][1] <= p[1] <= zone[1][1] for p in danger_points
+        )
+        color = "red" if in_danger else "green"
+        folium.Polygon(locations=zone, color=color, fill=True, fill_opacity=0.4, tooltip="Safe Zone" if color=="green" else "Danger Zone").add_to(m_zone)
+    
+    st_folium(m_zone, width=700, height=500)
 
 # --- Safe Routes ---
 elif menu == translations["safe_routes"][lang]:
     st.subheader(translations["safe_routes"][lang])
-    st.info("Safe routes between port and fishing zones")
+    
+    port = [8.5, 78.0]
+    
+    recent_sos = db.collection("sos_alerts").where(
+        "timestamp", ">=", datetime.utcnow() - timedelta(hours=24)
+    ).stream()
+    
+    danger_points = []
+    for doc in recent_sos:
+        d = doc.to_dict()
+        try:
+            danger_points.append([float(d.get("latitude",0)), float(d.get("longitude",0))])
+        except:
+            continue
+    
+    safe_fishing = [8.6,78.1]
+    for i in range(8,9):
+        for j in range(78,79):
+            if all(abs(i-p[0])>0.01 or abs(j-p[1])>0.01 for p in danger_points):
+                safe_fishing = [i,j]
+                break
+    
+    m_route = folium.Map(location=port, zoom_start=11)
+    folium.Marker(port, tooltip="Port", icon=folium.Icon(color="blue")).add_to(m_route)
+    folium.Marker(safe_fishing, tooltip="Safe Fishing Zone", icon=folium.Icon(color="green")).add_to(m_route)
+    folium.PolyLine([port, safe_fishing], color="green", weight=5, tooltip="Safe Route").add_to(m_route)
+    
+    for p in danger_points:
+        folium.CircleMarker(location=p, radius=5, color="red", fill=True, fill_opacity=0.7, tooltip="Danger Zone").add_to(m_route)
+    
+    st_folium(m_route, width=700, height=500)
 
 # --- Fishing Trends ---
 elif menu == translations["fishing_trends"][lang]:
@@ -341,15 +360,14 @@ elif menu == translations["fishing_trends"][lang]:
 # --- Voice Assistant ---
 elif menu == translations["voice_assistant"][lang]:
     st.subheader(translations["voice_assistant"][lang])
-    command = get_browser_voice_command()
+    st.info("🎤 Enter your command here (simulate voice input)")
+    command = st.text_input(translations["voice_assistant"][lang])
     if command:
         st.info(f"Command received: {command}")
-        speak(f"You said: {command}")
 
 # --- ABOUT ---
 elif menu == translations["about"][lang]:
     st.subheader(translations["about"][lang])
-    st_lottie(load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_zrqthn6o.json"), height=200)
     st.markdown("""
     BlueWave AI is an advanced assistant platform for fishermen:
     - Send & receive SOS alerts
@@ -361,6 +379,8 @@ elif menu == translations["about"][lang]:
     - Voice assistant commands
     - Fully Cloud-compatible & mobile-friendly
     """)
+
+
 
 
 
