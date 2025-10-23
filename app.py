@@ -1,4 +1,4 @@
-# BlueWave AI - Fishermen Safety Assistant
+# BlueWave AI - Fishermen Safety Assistant (Advanced Version)
 import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app
 import firebase_admin
@@ -8,11 +8,13 @@ import json
 import requests
 from streamlit_lottie import st_lottie
 import pandas as pd
-from streamlit_js_eval import streamlit_js_eval  # For real-time location
+from streamlit_js_eval import streamlit_js_eval
+import pyttsx3
+import speech_recognition as sr
 
 # Streamlit setup
 st.set_page_config(page_title="BlueWave AI", layout="wide")
-st.title("🌊 BlueWave AI - Fishermen Safety Assistant")
+st.title("🌊 BlueWave AI - Fishermen Safety Assistant (Advanced)")
 
 # Firebase setup
 if not firebase_admin._apps:
@@ -29,6 +31,27 @@ def load_lottie_url(url):
     except:
         return None
 
+# Initialize text-to-speech engine
+engine = pyttsx3.init()
+
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
+# Voice input
+def get_voice_command():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.info("🎤 Listening for command...")
+        audio = r.listen(source, timeout=5, phrase_time_limit=5)
+    try:
+        command = r.recognize_google(audio)
+        st.success(f"🗣 You said: {command}")
+        return command.lower()
+    except:
+        st.error("❌ Could not recognize voice.")
+        return ""
+
 # --- Sidebar Navigation ---
 menu = st.sidebar.radio(
     "📱 Navigation",
@@ -39,6 +62,8 @@ menu = st.sidebar.radio(
         "Weather Advisory",
         "Community Updates",
         "Real-time Location",
+        "Safe Zone Prediction",
+        "Voice Assistant",
         "Fishing Trends",
         "Safe Routes",
         "Alerts",
@@ -83,6 +108,7 @@ elif menu == "Send SOS":
                 "timestamp": datetime.utcnow()
             })
             st.success("✅ SOS alert sent successfully!")
+            speak("SOS alert sent successfully")
     else:
         st.warning("Please login to send an SOS alert.")
 
@@ -120,8 +146,10 @@ elif menu == "Weather Advisory":
 
             if float(wind) > 25:
                 st.error("⚠️ Sea condition unsafe! Avoid fishing now.")
+                speak("Warning! Sea conditions unsafe.")
             else:
                 st.success("✅ Sea condition safe for fishing.")
+                speak("Sea conditions are safe for fishing.")
         except:
             st.error("Unable to fetch weather data.")
 
@@ -150,7 +178,7 @@ elif menu == "Community Updates":
     else:
         st.warning("Login to post or view updates.")
 
-# --- REAL-TIME LOCATION (WORKING) ---
+# --- REAL-TIME LOCATION ---
 elif menu == "Real-time Location":
     st.subheader("📍 Real-time Location Tracker")
     if st.session_state.user:
@@ -181,6 +209,42 @@ elif menu == "Real-time Location":
             st.info("Allow browser to access your location.")
     else:
         st.warning("Login to use location feature.")
+
+# --- SAFE ZONE PREDICTION (ADVANCED) ---
+elif menu == "Safe Zone Prediction":
+    st.subheader("🗺️ AI-Based Safe Zone Prediction")
+    location = st.text_input("Enter your fishing location")
+    wind = st.number_input("Current wind speed (km/h)")
+    past_sos_count = st.number_input("Number of past SOS events in this area", value=0)
+
+    if st.button("Predict Safe Zone"):
+        # Simple AI logic: higher wind + more SOS = danger
+        risk_score = wind * 0.4 + past_sos_count * 0.6
+        if risk_score < 20:
+            st.success("✅ Safe Zone")
+            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))  # Placeholder location
+            speak("This zone is safe for fishing")
+        else:
+            st.error("⚠️ High Risk Zone")
+            st.map(pd.DataFrame({"lat":[10.0], "lon":[78.0]}))  # Placeholder location
+            speak("Warning! This zone is risky. Avoid fishing.")
+
+# --- VOICE ASSISTANT ---
+elif menu == "Voice Assistant":
+    st.subheader("🎤 Voice Assistant")
+    if st.session_state.user:
+        st.info("You can say commands like 'send SOS' or 'show safe zones'.")
+        command = get_voice_command()
+        if "sos" in command:
+            st.session_state.command = "SOS"
+            st.success("Voice command recognized: Send SOS")
+        elif "safe" in command:
+            st.session_state.command = "SAFE_ZONE"
+            st.success("Voice command recognized: Show Safe Zone")
+        else:
+            st.warning("Command not recognized.")
+    else:
+        st.warning("Login to use voice assistant.")
 
 # --- FISHING TRENDS DASHBOARD ---
 elif menu == "Fishing Trends":
@@ -217,45 +281,5 @@ elif menu == "Fishing Trends":
 elif menu == "Safe Routes":
     st.subheader("🗺️ Safe Route Suggestion")
     location = st.text_input("Enter your current fishing location")
-    wind = st.number_input("Enter approximate wind speed (km/h)")
+    wind = st.number_input("Enter approximate wind speed (
 
-    if st.button("Suggest Safe Areas"):
-        if wind > 25:
-            st.error("⚠️ Avoid offshore areas, stay near safe harbors!")
-        else:
-            st.success("✅ Safe to sail in open sea zones. Use caution.")
-
-# --- ALERTS ---
-elif menu == "Alerts":
-    st.subheader("📢 Recent SOS Alerts")
-    alerts = db.collection("sos_alerts").order_by(
-        "timestamp", direction=firestore.Query.DESCENDING
-    ).limit(10)
-    for doc in alerts.stream():
-        data = doc.to_dict()
-        st.warning(
-            f"🚨 **{data.get('username','Unknown')}** reported: {data.get('message','')}\n"
-            f"📍 Location: {data.get('latitude','N/A')}, {data.get('longitude','N/A')}\n"
-            f"🕒 {data.get('timestamp','')}"
-        )
-
-# --- ABOUT ---
-elif menu == "About":
-    st.subheader("🌊 About BlueWave AI")
-    st_lottie(load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_zrqthn6o.json"), height=200)
-    st.markdown("""
-    **BlueWave AI** is an innovative safety assistant for fishermen powered by AI & cloud.
-
-    ### 🌟 Features:
-    - 🚨 SOS Emergency Alerts  
-    - 🤖 AI Fish Catch Prediction  
-    - 🌤 Weather & Sea Advisory  
-    - 💬 Fishermen Community Forum  
-    - 📍 Real-time Location Tracking  
-    - 📈 Fishing Trends Dashboard  
-    - 🗺️ Safe Route Suggestion  
-    - 🕒 Alerts System  
-    - 🈁 Multilingual Support (Coming Soon)
-
-    Made with ❤️ by Team BlueWave for safe and smart fishing.
-    """)
