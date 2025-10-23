@@ -1,4 +1,4 @@
-# BlueWave AI - Fishermen Safety Assistant (No Login + Full Voice + Folium Maps)
+# BlueWave AI - Fishermen Safety Assistant (Full Multilingual TTS + No Login + Folium Maps)
 import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app
 import firebase_admin
@@ -20,24 +20,120 @@ lang = st.sidebar.selectbox(
 
 # --- Translations Dictionary ---
 translations = {
-    "title": {"English":"🌊 BlueWave AI - Fishermen Safety Assistant","Hindi":"🌊 ब्लूवेव एआई - मछुआरों के लिए सुरक्षा सहायक","Tamil":"🌊 புளூவேவ் ஏ.ஐ - மீனவர்களின் பாதுகாப்பு உதவி","Telugu":"🌊 బ్లూవేవ్ ఎ.ఐ - మత్స్యకారుల భద్రతా సహాయకుడు"},
-    "send_sos": {"English":"🚨 Send Emergency SOS","Hindi":"🚨 आपातकालीन SOS भेजें","Tamil":"🚨 அவசர SOS அனுப்பு","Telugu":"🚨 అత్యవసర SOS పంపండి"},
-    "sos_message": {"English":"Message","Hindi":"संदेश","Tamil":"செய்தி","Telugu":"సందేశం"},
-    "latitude": {"English":"Latitude (optional)","Hindi":"अक्षांश (वैकल्पिक)","Tamil":"அட்சாங்ஸ் (விருப்பமானது)","Telugu":"అక్షాంశం (ఐచ్ఛికం)"},
-    "longitude": {"English":"Longitude (optional)","Hindi":"देशांतर (वैकल्पिक)","Tamil":"உயர்நிலை (விருப்பமானது)","Telugu":"రేఖాంశం (ఐచ్ఛికం)"},
-    "alerts": {"English":"📢 Nearby Alerts","Hindi":"📢 पास के अलर्ट","Tamil":"📢 அருகிலுள்ள எச்சரிக்கைகள்","Telugu":"📢 సమీప హెచ్చరికలు"},
-    "ai_prediction": {"English":"AI Fish Catch Prediction","Hindi":"एआई मछली पकड़ने की भविष्यवाणी","Tamil":"ஏ.ஐ மீன் பிடிக்கும் கணிப்பு","Telugu":"ఏఐ చేప పట్టు భవిష్యవాణి"},
-    "upload_json": {"English":"Upload JSON file","Hindi":"JSON फ़ाइल अपलोड करें","Tamil":"JSON கோப்பை பதிவேற்றவும்","Telugu":"JSON ఫైల్ అప్‌లోడ్ చేయండి"},
-    "weather_advisory": {"English":"Weather & Sea Advisory","Hindi":"मौसम और समुद्र सलाह","Tamil":"வானிலை மற்றும் கடல் ஆலோசனை","Telugu":"వాతావరణ & సముద్ర సూచనలు"},
-    "community_updates": {"English":"Community Updates","Hindi":"समुदाय अपडेट्स","Tamil":"சமூக புதுப்பிப்புகள்","Telugu":"సముదాయ నవీకరణలు"},
-    "safe_zone_prediction": {"English":"Safe Zone Prediction","Hindi":"सुरक्षित क्षेत्र की भविष्यवाणी","Tamil":"பாதுகாப்பான பகுதி கணிப்பு","Telugu":"సురక్షిత ప్రాంతం భవిష్యవాణి"},
-    "safe_routes": {"English":"Safe Routes","Hindi":"सुरक्षित मार्ग","Tamil":"பாதுகாப்பான வழிகள்","Telugu":"సురక్షిత మార్గాలు"},
-    "voice_assistant": {"English":"Voice Assistant","Hindi":"वॉइस असिस्टेंट","Tamil":"குரல் உதவியாளர்","Telugu":"వాయిస్ అసిస్టెంట్"},
-    "fishing_trends": {"English":"Fishing Trends","Hindi":"मछली पकड़ने के रुझान","Tamil":"மீன் பிடிக்கும் போக்குகள்","Telugu":"చేప పట్టు ధోరణులు"},
-    "update_location": {"English":"Update Location","Hindi":"स्थान अपडेट करें","Tamil":"இருப்பிடத்தை புதுப்பிக்கவும்","Telugu":"స్థానం నవీకరించండి"},
-    "location_updated": {"English":"Location updated","Hindi":"स्थान अपडेट किया गया","Tamil":"இருப்பிடம் புதுப்பிக்கப்பட்டது","Telugu":"స్థానం నవీకరించబడింది"},
-    "sos_sent": {"English":"SOS Alert Sent!","Hindi":"SOS अलर्ट भेजा गया!","Tamil":"SOS எச்சரிக்கை அனுப்பப்பட்டது!","Telugu":"SOS హెచ్చరిక పంపబడింది!"},
-    "about": {"English":"About","Hindi":"के बारे में","Tamil":"பற்றி","Telugu":"గురించి"},
+    "title": {
+        "English":"🌊 BlueWave AI - Fishermen Safety Assistant",
+        "Hindi":"🌊 ब्लूवेव एआई - मछुआरों के लिए सुरक्षा सहायक",
+        "Tamil":"🌊 புளூவேவ் ஏ.ஐ - மீனவர்களின் பாதுகாப்பு உதவி",
+        "Telugu":"🌊 బ్లూవేవ్ ఎ.ఐ - మత్స్యకారుల భద్రతా సహాయకుడు"
+    },
+    "send_sos": {
+        "English":"🚨 Send Emergency SOS",
+        "Hindi":"🚨 आपातकालीन SOS भेजें",
+        "Tamil":"🚨 அவசர SOS அனுப்பு",
+        "Telugu":"🚨 అత్యవసర SOS పంపండి"
+    },
+    "sos_message": {
+        "English":"Message",
+        "Hindi":"संदेश",
+        "Tamil":"செய்தி",
+        "Telugu":"సందేశం"
+    },
+    "latitude": {
+        "English":"Latitude (optional)",
+        "Hindi":"अक्षांश (वैकल्पिक)",
+        "Tamil":"அட்சாங்ஸ் (விருப்பமானது)",
+        "Telugu":"అక్షాంశం (ఐచ్ఛికం)"
+    },
+    "longitude": {
+        "English":"Longitude (optional)",
+        "Hindi":"देशांतर (वैकल्पिक)",
+        "Tamil":"உயர்நிலை (விருப்பமானது)",
+        "Telugu":"రేఖాంశం (ఐచ్ఛికం)"
+    },
+    "alerts": {
+        "English":"📢 Nearby Alerts",
+        "Hindi":"📢 पास के अलर्ट",
+        "Tamil":"📢 அருகிலுள்ள எச்சரிக்கைகள்",
+        "Telugu":"📢 సమీప హెచ్చరికలు"
+    },
+    "ai_prediction": {
+        "English":"AI Fish Catch Prediction",
+        "Hindi":"एआई मछली पकड़ने की भविष्यवाणी",
+        "Tamil":"ஏ.ஐ மீன் பிடிக்கும் கணிப்பு",
+        "Telugu":"ఏఐ చేప పట్టు భవిష్యవాణి"
+    },
+    "upload_json": {
+        "English":"Upload JSON file",
+        "Hindi":"JSON फ़ाइल अपलोड करें",
+        "Tamil":"JSON கோப்பை பதிவேற்றவும்",
+        "Telugu":"JSON ఫైల్ అప్‌లోడ్ చేయండి"
+    },
+    "weather_advisory": {
+        "English":"Weather & Sea Advisory",
+        "Hindi":"मौसम और समुद्र सलाह",
+        "Tamil":"வானிலை மற்றும் கடல் ஆலோசனை",
+        "Telugu":"వాతావరణ & సముద్ర సూచనలు"
+    },
+    "community_updates": {
+        "English":"Community Updates",
+        "Hindi":"समुदाय अपडेट्स",
+        "Tamil":"சமூக புதுப்பிப்புகள்",
+        "Telugu":"సముదాయ నవీకరణలు"
+    },
+    "safe_zone_prediction": {
+        "English":"Safe Zone Prediction",
+        "Hindi":"सुरक्षित क्षेत्र की भविष्यवाणी",
+        "Tamil":"பாதுகாப்பான பகுதி கணிப்பு",
+        "Telugu":"సురక్షిత ప్రాంతం భవిష్యవాణి"
+    },
+    "safe_routes": {
+        "English":"Safe Routes",
+        "Hindi":"सुरक्षित मार्ग",
+        "Tamil":"பாதுகாப்பான வழிகள்",
+        "Telugu":"సురక్షిత మార్గాలు"
+    },
+    "voice_assistant": {
+        "English":"Voice Assistant",
+        "Hindi":"वॉइस असिस्टेंट",
+        "Tamil":"குரல் உதவியாளர்",
+        "Telugu":"వాయిస్ అసిస్టెంట్"
+    },
+    "fishing_trends": {
+        "English":"Fishing Trends",
+        "Hindi":"मछली पकड़ने के रुझान",
+        "Tamil":"மீன் பிடிக்கும் போக்குகள்",
+        "Telugu":"చేప పట్టు ధోరణులు"
+    },
+    "update_location": {
+        "English":"Update Location",
+        "Hindi":"स्थान अपडेट करें",
+        "Tamil":"இருப்பிடத்தை புதுப்பிக்கவும்",
+        "Telugu":"స్థానం నవీకరించండి"
+    },
+    "location_updated": {
+        "English":"Location updated",
+        "Hindi":"स्थान अपडेट किया गया",
+        "Tamil":"இருப்பிடம் புதுப்பிக்கப்பட்டது",
+        "Telugu":"స్థానం నవీకరించబడింది"
+    },
+    "sos_sent": {
+        "English":"SOS Alert Sent!",
+        "Hindi":"SOS अलर्ट भेजा गया!",
+        "Tamil":"SOS எச்சரிக்கை அனுப்பப்பட்டது!",
+        "Telugu":"SOS హెచ్చరిక పంపబడింది!"
+    },
+    "real_time_location": {
+        "English": "📍 Real-time Location",
+        "Hindi": "📍 वास्तविक समय स्थान",
+        "Tamil": "📍 நேரடி இடம்",
+        "Telugu": "📍 రియల్-టైమ్ స్థానం"
+    },
+    "about": {
+        "English":"About",
+        "Hindi":"के बारे में",
+        "Tamil":"பற்றி",
+        "Telugu":"గురించి"
+    }
 }
 
 # --- Firebase Setup ---
@@ -46,11 +142,13 @@ if not firebase_admin._apps:
     initialize_app(cred)
 db = firestore.client()
 
-# --- Browser TTS ---
+# --- Browser TTS with Language ---
 def speak(text):
+    lang_map = {"English":"en-US", "Hindi":"hi-IN", "Tamil":"ta-IN", "Telugu":"te-IN"}
     st.components.v1.html(f"""
         <script>
             var msg = new SpeechSynthesisUtterance("{text}");
+            msg.lang = "{lang_map.get(lang,'en-US')}";
             window.speechSynthesis.speak(msg);
         </script>
         """, height=0)
@@ -63,13 +161,13 @@ menu = st.sidebar.radio(
         translations["ai_prediction"][lang],
         translations["weather_advisory"][lang],
         translations["community_updates"][lang],
-        "📍 Real-time Location",
+        translations["real_time_location"][lang],
         translations["safe_zone_prediction"][lang],
         translations["voice_assistant"][lang],
         translations["fishing_trends"][lang],
         translations["safe_routes"][lang],
         translations["alerts"][lang],
-        translations["about"][lang]  # About page
+        translations["about"][lang]
     ]
 )
 st.sidebar.markdown("---")
@@ -114,14 +212,14 @@ elif menu == translations["ai_prediction"][lang]:
             data = json.load(uploaded_file)
             score = 0.7
             st.success(f"Predicted Fish Availability Score: {score*100:.1f}%")
-            speak(f"Predicted Fish Availability Score {score*100:.1f} percent")
-        except Exception:
+            speak(f"{translations['ai_prediction'][lang]}: {score*100:.1f} percent")
+        except Exception as e:
             st.error("Invalid JSON file. Please upload a correct JSON.")
             speak("Invalid JSON file. Please upload a correct JSON.")
 
 # --- Real-time Location ---
-elif menu == "📍 Real-time Location":
-    st.subheader("📍 Real-time Location Tracker")
+elif menu == translations["real_time_location"][lang]:
+    st.subheader(translations["real_time_location"][lang])
     lat = st.number_input(translations["latitude"][lang], value=8.5, key="loc_lat")
     lon = st.number_input(translations["longitude"][lang], value=78.1, key="loc_lon")
     if st.button(translations["update_location"][lang]):
@@ -140,7 +238,9 @@ elif menu == "📍 Real-time Location":
 # --- Safe Zone Prediction ---
 elif menu == translations["safe_zone_prediction"][lang]:
     st.subheader(translations["safe_zone_prediction"][lang])
-    recent_sos = db.collection("sos_alerts").where("timestamp", ">=", datetime.utcnow() - timedelta(hours=24)).stream()
+    recent_sos = db.collection("sos_alerts").where(
+        "timestamp", ">=", datetime.utcnow() - timedelta(hours=24)
+    ).stream()
     danger_points = []
     for doc in recent_sos:
         d = doc.to_dict()
@@ -155,13 +255,15 @@ elif menu == translations["safe_zone_prediction"][lang]:
         color = "red" if in_danger else "green"
         folium.Polygon(locations=zone, color=color, fill=True, fill_opacity=0.4, tooltip="Safe Zone" if color=="green" else "Danger Zone").add_to(m_zone)
     st_folium(m_zone, width=700, height=500)
-    speak("Safe zone prediction updated")
+    speak(translations["safe_zone_prediction"][lang])
 
 # --- Safe Routes ---
 elif menu == translations["safe_routes"][lang]:
     st.subheader(translations["safe_routes"][lang])
     port = [8.5, 78.0]
-    recent_sos = db.collection("sos_alerts").where("timestamp", ">=", datetime.utcnow() - timedelta(hours=24)).stream()
+    recent_sos = db.collection("sos_alerts").where(
+        "timestamp", ">=", datetime.utcnow() - timedelta(hours=24)
+    ).stream()
     danger_points = []
     for doc in recent_sos:
         d = doc.to_dict()
@@ -177,14 +279,14 @@ elif menu == translations["safe_routes"][lang]:
     for p in danger_points:
         folium.CircleMarker(location=p, radius=5, color="red", fill=True, fill_opacity=0.7, tooltip="Danger Zone").add_to(m_route)
     st_folium(m_route, width=700, height=500)
-    speak("Safe route updated")
+    speak(translations["safe_routes"][lang])
 
 # --- Fishing Trends ---
 elif menu == translations["fishing_trends"][lang]:
     st.subheader(translations["fishing_trends"][lang])
     df = pd.DataFrame({"Day":["Mon","Tue","Wed","Thu","Fri"],"Catch Score":[0.7,0.8,0.6,0.9,0.75]})
     st.line_chart(df.set_index("Day")["Catch Score"])
-    speak("Displaying fishing trends for the week")
+    speak(translations["fishing_trends"][lang])
 
 # --- Voice Assistant ---
 elif menu == translations["voice_assistant"][lang]:
@@ -193,15 +295,15 @@ elif menu == translations["voice_assistant"][lang]:
     command = st.text_input("Type your command here")
     if st.button("Speak Command") and command:
         st.info(f"Command received: {command}")
-        speak(f"You said: {command}")
+        speak(f"{command}")
 
 # --- Weather Advisory ---
 elif menu == translations["weather_advisory"][lang]:
     st.subheader(translations["weather_advisory"][lang])
     lat = st.number_input(translations["latitude"][lang], value=8.5)
     lon = st.number_input(translations["longitude"][lang], value=78.1)
-    st.info(f"Weather advisory for ({lat},{lon})")
-    speak(f"Weather advisory for latitude {lat} and longitude {lon}")
+    st.info(f"{translations['weather_advisory'][lang]} for ({lat},{lon})")
+    speak(f"{translations['weather_advisory'][lang]} latitude {lat} longitude {lon}")
 
 # --- Community Updates ---
 elif menu == translations["community_updates"][lang]:
@@ -229,3 +331,5 @@ elif menu == translations["about"][lang]:
     - Voice assistant commands
     - Fully Cloud-compatible & mobile-friendly
     """)
+    speak("BlueWave AI is an advanced assistant platform for fishermen")
+
